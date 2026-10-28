@@ -7,7 +7,7 @@
 <style>
 /* Layout: app shell — bottom tab bar on phone, left rail on Mac; sessions take over the full screen, one exercise at a time. */
 :root{
-  --bg:#F3F5FB; --surface:#FFFFFF; --sunk:#E9EDF7; --ink:#131936; --muted:#5A6384; --line:#DCE1EE; --line-deep:#C7CEE2;
+  --bg:#F2F4FA; --surface:#FFFFFF; --sunk:#E8ECF6; --ink:#111835; --muted:#566086; --line:#DDE2EF; --line-deep:#C4CBE0;
   --cobalt:#2446D8; --cobalt-deep:#1732A8; --cobalt-soft:#E2E8FF; --on-cobalt:#FFFFFF;
   --saffron:#EFA316; --saffron-deep:#C7820A; --saffron-soft:#FFF0D2;
   --ok:#1E9A61; --ok-deep:#167649; --ok-soft:#DCF4E8;
@@ -16,6 +16,7 @@
   --f-ui:"Figtree", -apple-system, "Segoe UI", system-ui, sans-serif;
   --r-lg:22px; --r-md:16px; --r-sm:11px;
   --shadow:0 1px 2px rgba(19,25,54,.05), 0 8px 24px rgba(19,25,54,.06);
+  --lift:0 1px 0 rgba(19,25,54,.04), 0 6px 18px -8px rgba(19,25,54,.16);
 }
 @media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
   --bg:#0B0F21; --surface:#141A31; --sunk:#1B2240; --ink:#EDF0FA; --muted:#9AA3C4; --line:#252D4D; --line-deep:#323C63;
@@ -445,7 +446,12 @@ textarea.input{min-height:140px; resize:vertical; line-height:1.45}
 
 /* ---------- v4: parla ---------- */
 .tabs{grid-template-columns:repeat(5,1fr)}
-.tab{font-size:.68rem}
+.tab{font-size:.66rem; gap:3px; padding:2px 0}
+.tab .ic{display:grid; place-items:center; width:56px; height:32px; border-radius:99px; transition:background .2s, transform .15s}
+.tab[aria-current="page"] .ic{background:var(--cobalt-soft)}
+.tab:active .ic{transform:scale(.9)}
+.tab span:last-child{white-space:nowrap}
+.rail .nav .ic{display:grid; place-items:center}
 .mic-wrap{display:flex; flex-direction:column; align-items:center; gap:12px; padding:8px 0}
 .mic{width:96px; height:96px; border-radius:50%; background:var(--bad); color:#fff; display:grid; place-items:center; box-shadow:0 5px 0 var(--bad-deep); transition:transform .08s, box-shadow .08s; position:relative}
 .mic svg{width:44px; height:44px}
@@ -508,6 +514,121 @@ textarea.input{min-height:140px; resize:vertical; line-height:1.45}
 .talk .accents button{height:36px}
 .talk .s-foot-in{gap:10px}
 
+/* ---------- v5: today, grammar, practice, polish ---------- */
+.hap{position:fixed; left:-200px; top:0; width:1px; height:1px; opacity:0; pointer-events:none; overflow:hidden}
+.main.enter > *{animation:rise-in .42s cubic-bezier(.2,.8,.2,1) both}
+.main.enter > *:nth-child(2){animation-delay:.03s} .main.enter > *:nth-child(3){animation-delay:.06s} .main.enter > *:nth-child(4){animation-delay:.09s} .main.enter > *:nth-child(5){animation-delay:.12s} .main.enter > *:nth-child(n+6){animation-delay:.15s}
+@keyframes rise-in{from{opacity:.4; transform:translateY(12px)}}
+.page-head .eyebrow{margin-bottom:4px; color:var(--cobalt)}
+.page-head h1{font-size:clamp(2rem, 7vw, 2.5rem); line-height:1.05}
+.page-head p{max-width:56ch; margin-top:8px}
+.today-head{align-items:center; margin-bottom:6px}
+@media (min-width:900px){.today-head{justify-content:flex-end}}
+.greet{margin:6px 0 18px}
+.greet .eyebrow{color:var(--cobalt)}
+.greet h1{font-size:clamp(2.1rem, 8vw, 2.8rem); line-height:1.02; margin-top:6px}
+.hero{gap:14px 18px}
+.hero h2{font-size:clamp(1.6rem, 6vw, 2rem)}
+.hero-weak{grid-column:1 / -1; display:flex; align-items:center; justify-content:space-between; gap:10px; padding:12px 14px; border-radius:14px; background:color-mix(in srgb, var(--on-cobalt) 15%, transparent); color:inherit; font-weight:700; text-align:left; transition:background .15s}
+.hero-weak:hover{background:color-mix(in srgb, var(--on-cobalt) 22%, transparent)}
+.hero-weak b{font-family:var(--f-display); font-size:1.15rem; margin-right:2px}
+.hero-weak svg{width:20px; height:20px; flex-shrink:0}
+.next-grid{display:grid; grid-template-columns:repeat(3, minmax(0,1fr)); gap:12px}
+@media (max-width:760px){.next-grid{grid-template-columns:1fr}}
+.next-card{display:grid; grid-template-columns:auto minmax(0,1fr); column-gap:14px; row-gap:2px; align-content:start; text-align:left; padding:16px; box-shadow:0 4px 0 var(--line); transition:transform .1s, box-shadow .1s, border-color .12s}
+.next-card .t-art{grid-row:1 / span 3}
+.next-card .nt{font-family:var(--f-display); font-weight:800; font-size:1.15rem; line-height:1.2}
+.next-card .sub{color:var(--muted); font-weight:600; font-size:.88rem; line-height:1.35}
+.next-card:hover{border-color:var(--line-deep)}
+.next-card:active{transform:translateY(4px); box-shadow:0 0 0 var(--line)}
+.next-card[disabled]{opacity:.55; cursor:not-allowed; transform:none}
+.t-art{min-width:48px; height:48px; padding:0 9px; border-radius:15px; background:var(--cobalt-soft); color:var(--cobalt); display:grid; place-items:center; font-family:var(--f-display); font-weight:800; font-size:.92rem; letter-spacing:-.02em; white-space:nowrap}
+.t-art svg{width:26px; height:26px}
+.t-art.sf{background:var(--saffron-soft); color:var(--saffron-deep)}
+.t-art.gr{background:var(--ok-soft); color:var(--ok)}
+:root[data-theme="dark"] .t-art.sf{color:var(--saffron)}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]) .t-art.sf{color:var(--saffron)}}
+.t-txt{min-width:0; display:flex; flex-direction:column; gap:1px}
+.t-txt b{font-family:var(--f-display); font-size:1.05rem; line-height:1.2}
+.t-txt > span{color:var(--muted); font-weight:600; font-size:.86rem; line-height:1.35}
+/* grammar */
+.method{display:flex; gap:6px; flex-wrap:wrap; margin:2px 0 16px}
+.method span{display:inline-flex; align-items:center; gap:7px; padding:5px 12px 5px 5px; border-radius:99px; background:var(--surface); border:1px solid var(--line); font-weight:700; font-size:.86rem}
+.method b{width:22px; height:22px; border-radius:50%; background:var(--cobalt); color:var(--on-cobalt); display:grid; place-items:center; font-size:.74rem}
+.gram-count{display:flex; flex-direction:column; gap:2px; max-width:360px}
+.topics{display:flex; flex-direction:column; background:var(--surface); border:1px solid var(--line); border-radius:var(--r-lg); overflow:hidden; box-shadow:var(--lift)}
+.topic{display:grid; grid-template-columns:auto minmax(0,1fr) auto; gap:14px; align-items:center; padding:12px 14px; border-bottom:1px solid var(--line); text-align:left; width:100%; transition:background .12s}
+.topic:last-child{border-bottom:0}
+.topic:hover{background:var(--sunk)}
+.topic .t-art{min-width:68px; height:44px; font-size:.82rem}
+.topic.done .t-art{background:var(--ok-soft); color:var(--ok)}
+.lead{margin:0; color:var(--muted); font-weight:600; font-size:1rem; line-height:1.5}
+.step-n{display:inline-grid; place-items:center; width:30px; height:30px; border-radius:50%; background:var(--cobalt); color:var(--on-cobalt); font-size:.95rem; margin-right:10px; vertical-align:2px}
+mark{background:linear-gradient(transparent 52%, color-mix(in srgb, var(--saffron) 50%, transparent) 52%); color:inherit; padding:0 .08em; border-radius:2px}
+.obs{display:flex; flex-direction:column; gap:8px}
+.obs-row{display:grid; grid-template-columns:minmax(0,1fr) auto; column-gap:12px; row-gap:2px; align-items:center; text-align:left; padding:14px 16px; background:var(--surface); border:1px solid var(--line); border-radius:var(--r-md); width:100%; transition:border-color .12s, transform .1s}
+.obs-row:hover{border-color:var(--line-deep)}
+.obs-row:active{transform:scale(.99)}
+.obs-es{font-family:var(--f-display); font-weight:700; font-size:1.2rem; line-height:1.3}
+.obs-it{grid-row:2; color:var(--muted); font-weight:600; font-size:.9rem}
+.obs-ic{grid-row:1 / span 2; grid-column:2; color:var(--cobalt); display:grid}
+.obs-ic svg{width:22px; height:22px}
+.rule-hero{background:var(--cobalt-soft); border-radius:var(--r-lg); padding:18px}
+.rule-hero p{margin:0; font-weight:600; font-size:1.04rem; line-height:1.6}
+.tbl-wrap{overflow-x:auto; border:1px solid var(--line); border-radius:var(--r-md); background:var(--surface)}
+.gtable{border-collapse:collapse; width:100%; font-size:.95rem}
+.gtable th,.gtable td{padding:9px 12px; text-align:left; border-bottom:1px solid var(--line); white-space:nowrap}
+.gtable thead th{font-size:.72rem; text-transform:uppercase; letter-spacing:.07em; color:var(--muted); background:var(--sunk); font-weight:800}
+.gtable tbody th{color:var(--muted); font-weight:700}
+.gtable td{font-weight:800}
+.gtable tbody tr:last-child > *{border-bottom:0}
+.vs{display:flex; flex-direction:column; border:1px solid var(--line); border-radius:var(--r-md); overflow:hidden; background:var(--surface)}
+.vs-h{display:grid; grid-template-columns:1fr 1fr; gap:12px; padding:8px 14px; background:var(--sunk); font-size:.72rem; text-transform:uppercase; letter-spacing:.07em; color:var(--muted); font-weight:800}
+.vs-row{display:grid; grid-template-columns:1fr 1fr; gap:4px 12px; padding:12px 14px; border-top:1px solid var(--line)}
+.vs-it{font-weight:600; color:var(--muted); min-width:0}
+.vs-es{font-weight:800; text-align:left; color:var(--cobalt); min-width:0; padding:0}
+.vs-n{grid-column:1 / -1; font-size:.86rem; color:var(--muted); font-weight:600}
+.traps{background:var(--saffron-soft); border-radius:var(--r-md); padding:14px 16px}
+.traps b{font-family:var(--f-display); font-size:1.02rem}
+.traps ul{margin:6px 0 0; padding-left:18px; display:flex; flex-direction:column; gap:5px; font-weight:600; font-size:.94rem; line-height:1.45}
+.peek summary{cursor:pointer; color:var(--cobalt); font-weight:800; padding:6px 0; list-style-position:inside}
+.peek .obs{margin-top:8px}
+.seal{width:112px; height:112px; border-radius:50%; background:var(--cobalt); color:var(--on-cobalt); display:grid; place-items:center; font-family:var(--f-display); font-weight:800; font-size:1.25rem; box-shadow:0 6px 0 var(--cobalt-deep); animation:pop .5s cubic-bezier(.2,.9,.25,1.4); text-align:center; padding:0 10px}
+.gram-body{display:flex; flex-direction:column; gap:14px}
+.gram-body > *{flex-shrink:0}
+.gram-body .legend{margin-top:-6px}
+.topic-link{display:grid; grid-template-columns:auto minmax(0,1fr) auto; gap:12px; align-items:center; text-align:left; padding:10px 12px; background:var(--surface); border:1px solid var(--line); border-radius:var(--r-md); width:100%}
+.topic-link b{font-family:var(--f-display); display:block; font-size:1.02rem}
+.topic-link > svg{width:20px; height:20px; color:var(--muted)}
+/* practice */
+.say-panel{padding:16px}
+.say-main{display:grid; grid-template-columns:auto minmax(0,1fr) auto; gap:14px; align-items:center; text-align:left; width:100%}
+.say-main > svg{width:22px; height:22px; color:var(--muted)}
+.sound-chips{display:grid; grid-template-columns:repeat(4, minmax(0,1fr)); gap:8px}
+@media (max-width:560px){.sound-chips{grid-template-columns:repeat(2, minmax(0,1fr))}}
+.sound-chip{display:flex; flex-direction:column; align-items:flex-start; gap:2px; padding:10px 12px; border-radius:14px; background:var(--sunk); text-align:left; transition:transform .1s, background .12s}
+.sound-chip:hover{background:var(--cobalt-soft)}
+.sound-chip:active{transform:scale(.97)}
+.sound-chip b{font-family:var(--f-display); color:var(--cobalt); font-size:1.05rem}
+.sound-chip span{font-size:.8rem; font-weight:700; color:var(--muted); line-height:1.25}
+/* sessions */
+.s-inner{gap:20px}
+.prompt .say{font-size:clamp(1.8rem, 7.5vw, 2.6rem); letter-spacing:-.02em}
+.s-kicker .k{font-size:1.35rem}
+.opt{padding:16px 18px; font-size:1.08rem}
+.progress{height:14px}
+.combo{display:inline-flex; align-items:center; margin-left:8px; padding:3px 10px; border-radius:99px; background:var(--saffron); color:#2a1d00; font-family:var(--f-ui); font-size:.8rem; font-weight:800; vertical-align:4px; animation:pop .45s cubic-bezier(.2,.9,.25,1.6)}
+.fb .badge{animation:badge .45s cubic-bezier(.2,.9,.25,1.5)}
+@keyframes badge{from{transform:scale(.4) rotate(-25deg)}}
+/* settings */
+.voices{display:flex; flex-direction:column; background:var(--surface); border:1px solid var(--line); border-radius:var(--r-md); overflow:hidden}
+.voice-row{display:flex; align-items:center; gap:4px; padding-right:4px; border-bottom:1px solid var(--line)}
+.voice-row:last-child{border-bottom:0}
+.voice-pick{flex:1; min-width:0; display:flex; align-items:center; gap:12px; padding:11px 12px; text-align:left}
+.voice-pick .t-txt b{font-family:var(--f-ui); font-size:.98rem}
+.radio{width:20px; height:20px; border-radius:50%; border:2.5px solid var(--line-deep); flex-shrink:0; transition:border .15s}
+.voice-row.on .radio{border:6px solid var(--cobalt)}
+
 @media (prefers-reduced-motion: reduce){
   *,*::before,*::after{animation-duration:.01ms!important; animation-iteration-count:1!important; transition-duration:.01ms!important}
 }
@@ -518,8 +639,8 @@ textarea.input{min-height:140px; resize:vertical; line-height:1.45}
     <div class="brand"><span class="brand-mark">¿</span>Repaso</div>
     <button class="nav" data-go="oggi"></button>
     <button class="nav" data-go="percorso"></button>
-    <button class="nav" data-go="allenati"></button>
-    <button class="nav" data-go="parla"></button>
+    <button class="nav" data-go="grammatica"></button>
+    <button class="nav" data-go="pratica"></button>
     <button class="nav" data-go="quaderno"></button>
     <button class="btn ghost" data-action="import"></button>
     <div class="foot" id="rail-foot"></div>
@@ -529,8 +650,8 @@ textarea.input{min-height:140px; resize:vertical; line-height:1.45}
 <nav class="tabs" aria-label="Navigazione">
   <button class="tab" data-go="oggi"></button>
   <button class="tab" data-go="percorso"></button>
-  <button class="tab" data-go="allenati"></button>
-  <button class="tab" data-go="parla"></button>
+  <button class="tab" data-go="grammatica"></button>
+  <button class="tab" data-go="pratica"></button>
   <button class="tab" data-go="quaderno"></button>
 </nav>
 <div id="layer"></div>
@@ -1883,6 +2004,7 @@ const ICON = {
   spark:'<svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2.5l1.9 5.6 5.6 1.9-5.6 1.9L12 17.5l-1.9-5.6L4.5 10l5.6-1.9z"/><path d="M19 15l.9 2.6 2.6.9-2.6.9L19 22l-.9-2.6-2.6-.9 2.6-.9z" opacity=".6"/></svg>',
   mic:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="2.5" width="6" height="11.5" rx="3" fill="currentColor"/><path d="M5.5 11a6.5 6.5 0 0 0 13 0M12 17.5V21M8.5 21h7"/></svg>',
   send:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19V5M5.5 11.5 12 5l6.5 6.5"/></svg>',
+  gram:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M2.5 18.5 7.2 5.5h1.1l4.7 13M4.3 14h7"/><path d="M15 10.3c.6-.9 1.6-1.4 2.8-1.4 1.7 0 2.7 1 2.7 2.8v6.8M20.5 14.3c-.8-.4-1.8-.6-2.8-.6-1.7 0-3.1.8-3.1 2.4 0 1.4 1.1 2.4 2.6 2.4 1.5 0 2.7-.8 3.3-2"/></svg>',
   chev:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="m9 6 6 6-6 6"/></svg>',
 };
 const PERSONS = ['yo','tú','él/ella/usted','nosotros','vosotros','ellos/ellas/ustedes'];
@@ -2178,17 +2300,64 @@ const LEVEL_LABEL = {new:'Da vedere', learn:'In corso', weak:'Deboli', solid:'Co
 const isDue = it => { const p = P(it); return p && p.due <= Date.now(); };
 function counts(list){ const c = {new:0, learn:0, weak:0, solid:0}; list.forEach(i => c[level(i)]++); return c; }
 
-/* ---------------- speech + sound ---------------- */
-let esVoice = null;
+/* ---------------- haptics ----------------
+   Android: Vibration API. iPhone (Safari 18+): toggling a hidden <input switch> plays the system haptic tick,
+   as long as it happens during a tap. Each kind is a short rhythm of ticks. */
+const HAPTIC = {tap:[8], ok:[12, 70, 22], bad:[30, 60, 30, 60, 30], done:[18, 80, 18, 80, 40], combo:[10, 50, 10, 50, 10, 50, 26]};
+let hapEl = null;
+function haptic(kind){
+  if (profile().haptics === false) return;
+  const pat = HAPTIC[kind] || HAPTIC.tap;
+  try { if (navigator.vibrate) { navigator.vibrate(pat); return; } } catch {}
+  try {
+    if (!hapEl) { hapEl = document.createElement('label'); hapEl.className = 'hap'; hapEl.setAttribute('aria-hidden', 'true'); const i = document.createElement('input'); i.type = 'checkbox'; i.setAttribute('switch', ''); i.tabIndex = -1; hapEl.appendChild(i); document.body.appendChild(hapEl); }
+    const ticks = Math.ceil(pat.length / 2);
+    for (let k = 0, t = 0; k < ticks; k++) { setTimeout(() => hapEl.click(), t); t += (pat[k*2] || 0) + (pat[k*2 + 1] || 0); }
+  } catch {}
+}
+
+/* ---------------- speech + sound ----------------
+   The best Spanish (Spain) voice installed wins: premium, enhanced and neural voices first, novelty voices last.
+   Short words are read a little slower and closed with a full stop so the voice ends with a natural falling tone. */
+let esVoice = null, esVoices = [];
 const canSpeak = 'speechSynthesis' in window;
-function pickVoice(){ const v = speechSynthesis.getVoices(); esVoice = v.find(x => x.lang === 'es-ES' && /monica|mónica|lucia|lucía|jorge|google/i.test(x.name)) || v.find(x => x.lang === 'es-ES') || v.find(x => x.lang?.startsWith('es')) || null; }
+function voiceScore(v){
+  const n = (v.name || '').toLowerCase(), lang = (v.lang || '').replace('_', '-').toLowerCase();
+  if (!lang.startsWith('es')) return -1;
+  let s = lang === 'es-es' ? 40 : 8;
+  if (/premium/.test(n)) s += 30;
+  if (/enhanced|mejorad|avanzad|natural|neural|online/.test(n)) s += 24;
+  if (/siri/.test(n)) s += 18;
+  if (/google/.test(n)) s += 10;
+  if (/m[oó]nica|marisa|elvira|álvaro|alvaro|jorge|luc[ií]a|paulina/.test(n)) s += 4;
+  if (/compact|eloquence|grandma|grandpa|rocko|shelley|flo\b|reed|sandy|eddy|bad news|bells|bubbles|jester|organ|superstar|trinoids|whisper|zarvox|wobble|cellos|boing|bahh|albert|fred|junior|kathy|ralph/.test(n)) s -= 40;
+  return s;
+}
+function pickVoice(){
+  if (!canSpeak) return;
+  esVoices = speechSynthesis.getVoices().filter(v => voiceScore(v) >= 0).sort((a, b) => voiceScore(b) - voiceScore(a));
+  const pref = Store.data?.meta?.profile?.voice;
+  esVoice = esVoices.find(v => v.voiceURI === pref) || esVoices[0] || null;
+}
 if (canSpeak) { pickVoice(); speechSynthesis.onvoiceschanged = pickVoice; }
 function speak(text, slow){
   if (!canSpeak || !text) return;
-  try { speechSynthesis.cancel(); const u = new SpeechSynthesisUtterance(speakable(text)); u.lang = 'es-ES'; if (esVoice) u.voice = esVoice; u.rate = slow ? .62 : .95; speechSynthesis.speak(u); } catch {}
+  try {
+    speechSynthesis.cancel();
+    let t = speakable(text).replace(/\s*—\s*/g, ', ').replace(/\s+/g, ' ').trim();
+    const words = t.split(' ').length;
+    if (!/[.!?…,;:]$/.test(t)) t += '.';
+    const u = new SpeechSynthesisUtterance(t);
+    u.lang = 'es-ES'; if (esVoice) u.voice = esVoice;
+    const pace = profile().pace || 1;
+    u.rate = (slow ? .68 : words <= 2 ? .9 : .97) * pace;
+    u.pitch = 1;
+    speechSynthesis.speak(u);
+  } catch {}
 }
 let actx = null;
 function tone(kind){
+  haptic(kind === 'bad' ? 'bad' : kind === 'done' ? 'done' : 'ok');
   if (profile().mute) return;
   try {
     actx = actx || new (window.AudioContext || window.webkitAudioContext)();
@@ -2200,26 +2369,25 @@ function tone(kind){
       o.connect(g).connect(actx.destination); o.start(t); o.stop(t+.25);
     });
   } catch {}
-  try { navigator.vibrate?.(kind === 'bad' ? [30,40,30] : 18); } catch {}
 }
 function toast(msg){ const h = $('#toast-host'); h.innerHTML = '<div class="toast">'+esc(msg)+'</div>'; clearTimeout(toast.t); toast.t = setTimeout(() => h.innerHTML = '', 3200); }
 
 /* ---------------- views ---------------- */
 let view = 'oggi', bookFilter = 'all', bookQuery = '', bookLimit = 120, openWord = null;
-const NAV = {oggi:['Oggi', ICON.home], percorso:['Percorso', ICON.path], allenati:['Allenati', ICON.gym], parla:['Parla', ICON.mic], quaderno:['Quaderno', ICON.book]};
+const NAV = {oggi:['Oggi', ICON.home], percorso:['Percorso', ICON.path], grammatica:['Grammatica', ICON.gram], pratica:['Pratica', ICON.gym], quaderno:['Quaderno', ICON.book]};
 function paintNav(){
-  document.querySelectorAll('[data-go]').forEach(b => {
+  document.querySelectorAll('.nav[data-go], .tab[data-go]').forEach(b => {
     const [label, icon] = NAV[b.dataset.go];
-    b.innerHTML = icon + '<span>' + label + '</span>';
+    b.innerHTML = '<span class="ic">' + icon + '</span><span>' + label + '</span>';
     if (b.dataset.go === view) b.setAttribute('aria-current','page'); else b.removeAttribute('aria-current');
   });
   $('.rail [data-action="import"]').innerHTML = ICON.plus + 'Nuova lezione';
   $('#rail-foot').textContent = Store.mode === 'cloud' ? 'Sincronizzato tra iPhone e Mac' : 'Salvato su questo dispositivo';
 }
-function go(v){ view = v; paintNav(); render(); window.scrollTo(0,0); }
+function go(v){ if (v === 'allenati' || v === 'parla') v = 'pratica'; if (v !== view) haptic('tap'); view = v; paintNav(); render(); window.scrollTo(0,0); const m = $('#main'); m.classList.remove('enter'); void m.offsetWidth; m.classList.add('enter'); }
 function render(){
   const m = $('#main');
-  m.innerHTML = view === 'oggi' ? renderToday() : view === 'percorso' ? renderPath() : view === 'allenati' ? renderTrain() : view === 'parla' ? renderTalk() : renderBook();
+  m.innerHTML = view === 'oggi' ? renderToday() : view === 'percorso' ? renderPath() : view === 'grammatica' ? renderGrammar() : view === 'pratica' ? renderPractice() : renderBook();
 }
 function streak(){
   const x = profile().xpByDay || {}; let n = 0, t = Date.now();
@@ -2236,6 +2404,12 @@ function nextLesson(){
   return null;
 }
 
+function greeting(){ const h = new Date().getHours(); return h < 6 ? '¡Buenas noches!' : h < 13 ? '¡Buenos días!' : h < 21 ? '¡Buenas tardes!' : '¡Buenas noches!'; }
+function nextTopic(){
+  const fresh = GRAMMAR.find(g => !gramDone(g.id));
+  if (fresh) return fresh;
+  return GRAMMAR.map(g => ({g, w:gramItems(g).filter(i => level(i) === 'weak').length})).sort((a, b) => b.w - a.w)[0].g;
+}
 function renderToday(){
   const all = items();
   const dateEs = new Intl.DateTimeFormat('es-ES',{weekday:'long', day:'numeric', month:'long'}).format(new Date());
@@ -2243,28 +2417,29 @@ function renderToday(){
   const due = all.filter(isDue), weak = all.filter(i => level(i) === 'weak'), seen = seenCount(all);
   const pct = Math.min(1, xpToday/goal), C = 2*Math.PI*44, nl = newLeft();
   const c = counts(all), tot = all.length || 1;
-  const nx = nextLesson();
+  const nx = nextLesson(), tp = nextTopic(), cv = CONV[Math.floor(Date.now() / DAY) % CONV.length], cl = lessonOfConv(cv);
   const headline = due.length ? `${due.length} ${due.length === 1 ? 'carta' : 'carte'} da ripassare` : nl && nx ? `${Math.min(nl, 8)} carte nuove` : 'Tutto in pari';
-  const sub = due.length ? (nl && nx ? `e qualche carta nuova dalla ${nx.l.sheet ? 'scheda' : 'lezione'} ${nx.l.sheet ? '«' + nx.l.title + '»' : nx.l.label.replace('L','')}` : 'dalle tue lezioni, mescolate') : nl && nx ? `dalla ${nx.l.sheet ? 'scheda «' + nx.l.title + '»' : 'lezione ' + nx.l.label.replace('L','') + ' · ' + nx.l.title}` : 'Fai un allenamento libero, se ti va';
+  const sub = due.length ? (nl && nx ? 'più qualche carta nuova, mescolate' : 'dalle tue lezioni, mescolate') : nl && nx ? `dalla ${nx.l.sheet ? 'scheda «' + nx.l.title + '»' : 'lezione ' + nx.l.label.replace('L','') + ' · ' + nx.l.title}` : 'Fai un allenamento libero, se ti va';
   const week = Array.from({length:7}, (_, i) => { const t = Date.now() - (6-i)*DAY, k = todayKey(t); return {k, v:xp[k] || 0, d:new Intl.DateTimeFormat('it-IT',{weekday:'narrow'}).format(new Date(t))}; });
   const wmax = Math.max(goal, ...week.map(w => w.v));
-  return `<div class="today-head"><div><div class="brand"><span class="brand-mark">¿</span>Repaso</div><div class="date-es">${esc(dateEs)}</div></div>
+  return `<div class="today-head"><div class="brand"><span class="brand-mark">¿</span>Repaso</div>
     <div class="chips-stat"><span class="stat-chip sun" title="Giorni di fila">${ICON.sun}<span class="num">${streak()}</span></span><button class="icon-btn" data-action="settings" aria-label="Impostazioni">${ICON.gear}</button></div></div>
+    <div class="greet"><div class="eyebrow">${esc(dateEs)}</div><h1>${greeting()}</h1></div>
     <section class="hero"><div class="tiles"></div>
       <div><div class="eyebrow" style="color:inherit;opacity:.8">Ripasso di oggi</div><h2>${esc(headline)}</h2><p>${esc(sub)}</p>
         <button class="btn" data-action="start" data-scope="daily">${xpToday ? 'Continua' : 'Inizia'} · circa 5 min</button></div>
       <div class="ring-wrap"><svg class="ring" viewBox="0 0 108 108" aria-label="Obiettivo giornaliero"><circle class="track" cx="54" cy="54" r="44" fill="none" stroke-width="10"/>
         <circle class="bar" cx="54" cy="54" r="44" fill="none" stroke-width="10" stroke-linecap="round" stroke-dasharray="${C}" stroke-dashoffset="${C*(1-pct)}" transform="rotate(-90 54 54)"/>
         <text x="54" y="52" text-anchor="middle" class="ring-label" font-size="24" fill="currentColor">${xpToday}</text><text x="54" y="72" text-anchor="middle" font-size="11" font-weight="700" fill="currentColor" opacity=".75">/ ${goal} XP</text></svg></div>
+      ${weak.length ? `<button class="hero-weak" data-action="start" data-scope="weak"><span><b class="num">${weak.length}</b> ${weak.length === 1 ? 'punto debole' : 'punti deboli'} da sistemare</span>${ICON.chev}</button>` : ''}
     </section>
-    <div class="grid2">
-      <button class="card tap-card weak" data-action="start" data-scope="weak" ${weak.length ? '' : 'disabled'}><span class="eyebrow">Punti deboli</span><span class="big num">${weak.length}</span><span class="sub">${weak.length ? 'Ciò che sbagli torna finché non lo sai' : 'Nessuno per ora. Bene così'}</span></button>
-      ${nx ? `<button class="card tap-card" data-action="start" data-scope="lesson" data-arg="${nx.l.id}"><span class="eyebrow">Avanti nel percorso · ${esc(nx.l.sheet ? 'Scheda' : nx.l.label)}</span><span class="big" style="font-size:1.3rem;line-height:1.2">${esc(nx.l.title)}</span><span class="sub">${nx.li.filter(i => !P(i)).length} carte ancora da vedere</span></button>`
-        : `<button class="card tap-card" data-go="allenati"><span class="eyebrow">Percorso completato</span><span class="big" style="font-size:1.3rem;line-height:1.2">Hai visto tutto</span><span class="sub">Ora il ripasso mantiene vivo quello che sai</span></button>`}
+    <div class="section-title"><h3>Continua da qui</h3></div>
+    <div class="next-grid">
+      ${nx ? `<button class="card next-card" data-action="start" data-scope="lesson" data-arg="${nx.l.id}"><span class="t-art">${esc(nx.l.sheet ? '✦' : nx.l.label)}</span><span class="eyebrow">Percorso</span><span class="nt">${esc(nx.l.title)}</span><span class="sub">${nx.li.filter(i => !P(i)).length} carte ancora da vedere</span></button>`
+        : `<button class="card next-card" data-go="percorso"><span class="t-art">${ICON.check}</span><span class="eyebrow">Percorso</span><span class="nt">Hai visto tutto</span><span class="sub">Il ripasso mantiene vivo quello che sai</span></button>`}
+      <button class="card next-card" data-action="gram-open" data-id="${tp.id}"><span class="t-art sf">${esc(tp.art)}</span><span class="eyebrow">Grammatica · ${gramDone(tp.id) ? 'da rinforzare' : 'da scoprire'}</span><span class="nt">${esc(tp.t)}</span><span class="sub">${esc(tp.sub)}</span></button>
+      <button class="card next-card" data-action="conv-start" data-arg="${cv.id}" ${sampleFn ? '' : 'disabled'}><span class="t-art gr">${ICON.mic}</span><span class="eyebrow">Parla${cl ? ' · ' + esc(cl.label) : ''}</span><span class="nt">${esc(cv.t)}</span><span class="sub">${esc(sampleFn ? cv.d : 'Apri Repaso da claude.ai per conversare')}</span></button>
     </div>
-    <div class="section-title"><h3>Allenamenti</h3><button class="link" data-go="allenati">Tutti</button></div>
-    <div class="train-strip">${TRAIN_ORDER.slice(0, 4).map(k => trainTile(k, true)).join('')}</div>
-    ${todayTalk()}
     <div class="section-title"><h3>Come stai andando</h3><span class="eyebrow num">${seen} di ${all.length} carte viste</span></div>
     <div class="card">
       <div class="mastery">${['solid','learn','weak','new'].map(k => `<span style="width:${c[k]/tot*100}%;background:${LEVEL_COLOR[k]}"></span>`).join('')}</div>
@@ -2278,15 +2453,11 @@ const modeNote = () => `<p class="mode-note">${Store.mode === 'cloud' ? 'I progr
 /* ----- training modes ----- */
 const TRAIN = {
   conj:{t:'Coniugazioni', d:'Presente e imperfetto di tutti i verbi del tutor', art:'<b>-amos</b>', filter:i => i.kind === 'verb'},
-  gram:{t:'Grammatica', d:'Ser o estar, por o para, hay o está, pero o sino…', art:'<b>¿?</b>', filter:i => i.kind === 'drill' && ['choice','q','cloze','fix'].includes(i.d.t) || i.kind === 'grammar' || i.kind === 'fix'},
-  trad:{t:'Traduzioni', d:'Frasi intere, corrette da Claude', art:'<b>it→es</b>', filter:i => i.kind === 'drill' && ['tr','build'].includes(i.d.t)},
-  clock:{t:'Le ore', d:'Leggi e scrivi l’ora sull’orologio', art:'clock', filter:i => i.gen === 'clock' || i.gen === 'clockw', gen:true},
-  num:{t:'I numeri', d:'Da 0 a 100: leggi, ascolta, scrivi', art:'<b>37</b>', filter:i => i.gen === 'num10' || i.gen === 'num100', gen:true},
-  ubic:{t:'¿Dónde está?', d:'Gli ubicadores sul disegno', art:'ubic', filter:i => i.gen === 'ubic', gen:true},
-  poss:{t:'Possessivi', d:'Mi, tu, su, nuestro, vuestro', art:'<b>mi·tu</b>', filter:i => i.gen === 'poss', gen:true},
-  dict:{t:'Dettato', d:'Ascolta e scrivi parole e frasi', art:'sound', filter:i => (i.kind === 'vocab' || i.kind === 'phrase') && !/…|\(/.test(i.es)},
+  trad:{t:'Traduzioni', d:'Frasi intere dall’italiano, corrette da Claude', art:'<b>it→es</b>', filter:i => i.kind === 'drill' && ['tr','build'].includes(i.d.t)},
+  dict:{t:'Ascolto e dettato', d:'Ascolta e scrivi parole e frasi', art:'sound', filter:i => (i.kind === 'vocab' || i.kind === 'phrase') && !/…|\(/.test(i.es)},
+  numore:{t:'Numeri e ore', d:'Da 0 a 100 e l’orologio: leggi, ascolta, scrivi', art:'clock', filter:i => ['num10','num100','clock','clockw'].includes(i.gen), gen:true},
 };
-const TRAIN_ORDER = ['conj','gram','trad','clock','dict','num','ubic','poss'];
+const TRAIN_ORDER = ['conj','trad','dict','numore'];
 function trainArt(k){
   const a = TRAIN[k].art;
   if (a === 'clock') return `<span class="tart">${clockSvg(10, 10)}</span>`;
@@ -2298,11 +2469,6 @@ function trainTile(k, compact){
   const T = TRAIN[k], li = items().filter(T.filter), w = li.filter(i => level(i) === 'weak').length;
   return `<button class="card train-tile ${compact ? 'compact' : ''}" data-action="start" data-scope="train" data-arg="${k}">${trainArt(k)}<span class="tt">${esc(T.t)}</span>${compact ? '' : `<span class="td">${esc(T.d)}</span>`}<span class="tm">${T.gen ? 'esercizi infiniti' : w ? `${w} ${w === 1 ? 'debole' : 'deboli'}` : `${li.length} carte`}</span></button>`;
 }
-function renderTrain(){
-  return `<div class="page-head"><h1>Allenati</h1><p>Sessioni mirate su una sola abilità. Contano anche per il ripasso.</p></div>
-    <div class="train-grid">${TRAIN_ORDER.map(k => trainTile(k)).join('')}</div>${modeNote()}`;
-}
-
 /* ----- path ----- */
 function renderPath(){
   const ls = lessons(), all = items();
@@ -2317,24 +2483,23 @@ function renderPath(){
 }
 
 /* ----- notebook ----- */
-const BOOK_F = [['all','Tutto'],['weak','Deboli'],['err','I tuoi errori'],['vocab','Parole'],['phrase','Espressioni'],['verb','Verbi'],['drill','Frasi']];
+const BOOK_F = [['all','Tutto'],['review','Da rivedere'],['vocab','Parole'],['phrase','Espressioni'],['verb','Verbi'],['drill','Frasi']];
 function itemDisplay(i){ return i.kind === 'verb' ? `${i.es}${i.tense === 'imperfetto' ? ' · imperfetto' : ''}` : i.kind === 'gen' ? i.es : i.es; }
 function renderBook(){
   const lm = lessonMap(), order = Object.fromEntries(lessons().map((l, i) => [l.id, i]));
   let list = items().filter(i => i.kind !== 'gen');
-  if (bookFilter === 'weak') list = list.filter(i => level(i) === 'weak');
-  else if (bookFilter === 'err') list = list.filter(i => P(i)?.w?.length).sort((a,b) => (P(b).last||0) - (P(a).last||0));
+  if (bookFilter === 'review') list = list.filter(i => level(i) === 'weak' || P(i)?.w?.length).sort((a,b) => (P(b).last||0) - (P(a).last||0));
   else if (bookFilter === 'drill') list = list.filter(i => ['drill','grammar','fix'].includes(i.kind));
   else if (bookFilter !== 'all') list = list.filter(i => i.kind === bookFilter);
   const q = bare(bookQuery);
   if (q) list = list.filter(i => bare(i.es).includes(q) || bare(i.it).includes(q));
-  if (bookFilter !== 'err') list.sort((a,b) => (order[a.lessonId] ?? 99) - (order[b.lessonId] ?? 99));
+  if (bookFilter !== 'review') list.sort((a,b) => (order[a.lessonId] ?? 99) - (order[b.lessonId] ?? 99));
   const total = list.length; list = list.slice(0, bookLimit);
   return `<div class="page-head"><h1>Quaderno</h1><p>Tutto il materiale del tutor, in un posto solo.</p></div>
     <label class="search">${ICON.search}<input id="book-q" type="search" placeholder="Cerca in spagnolo o in italiano" value="${esc(bookQuery)}" autocomplete="off"></label>
     <div class="filters">${BOOK_F.map(([k,l]) => `<button class="fchip" data-filter="${k}" aria-pressed="${bookFilter===k}">${esc(l)}</button>`).join('')}</div>
     ${list.length ? `<div class="words">${list.map(i => wordRow(i, lm)).join('')}</div>${total > list.length ? `<button class="btn ghost wide" style="margin-top:14px" data-action="more">Mostra altri ${Math.min(120, total - list.length)} di ${total - list.length}</button>` : ''}`
-      : `<div class="card empty-note">${bookFilter === 'err' ? 'Qui compariranno le risposte che sbagli, con quello che avevi scritto.' : 'Nessun risultato.'}</div>`}`;
+      : `<div class="card empty-note">${bookFilter === 'review' ? 'Qui compariranno le carte deboli e le risposte che sbagli, con quello che avevi scritto.' : 'Nessun risultato.'}</div>`}`;
 }
 function wordRow(i, lm){
   const p = P(i), open = openWord === i.id;
@@ -2394,11 +2559,13 @@ function unitSheet(u, ui){
   const drillsOf = rid => ui.filter(i => i.kind === 'drill' && i.ruleId === rid);
   const loose = ui.filter(i => i.kind === 'drill' && !i.ruleId);
   const ex = list => list.filter(i => i.d.t !== 'q').slice(0, 4).map(i => `<li><span class="say-inline" data-action="say" data-text="${esc(i.es)}">${esc(i.es)}</span>${i.it && i.d.t !== 'tr' ? ` <em>${esc(i.it)}</em>` : i.d.t === 'tr' ? ` <em>${esc(i.d.it)}</em>` : ''}</li>`).join('');
-  return `${rules.map(r => `<div class="rule-card"><b>${esc(r.title)}</b><p>${esc(r.text)}</p>${drillsOf(r.id).length ? `<ul class="exlist">${ex(drillsOf(r.id))}</ul>` : ''}</div>`).join('')}
+  const topics = [...new Set([...rules.map(r => GRAM_BY_RULE[r.id]), ...gens.map(g => GRAMMAR.find(t => t.gens?.includes(g.gen)))].filter(Boolean))];
+  return `${topics.map(g => `<button class="topic-link" data-action="gram-open" data-id="${g.id}"><span class="t-art sf">${esc(g.art)}</span><span><span class="eyebrow">Teoria in Grammatica</span><b>${esc(g.t)}</b></span>${ICON.chev}</button>`).join('')}
+    ${rules.filter(r => !GRAM_BY_RULE[r.id]).map(r => `<div class="rule-card"><b>${esc(r.title)}</b><p>${esc(r.text)}</p>${drillsOf(r.id).length ? `<ul class="exlist">${ex(drillsOf(r.id))}</ul>` : ''}</div>`).join('')}
     ${loose.length ? `<ul class="exlist">${ex(loose)}</ul>` : ''}
     ${voc.length ? `<div class="vtable">${voc.map(i => `<button class="vrow" data-action="say" data-text="${esc(i.es)}"><span class="es">${esc(i.es)}</span><span class="it">${esc(i.it)}${i.note ? `<small>${esc(i.note)}</small>` : ''}</span></button>`).join('')}</div>` : ''}
     ${verbs.length ? `<div class="verbs">${verbs.map(v => `<div class="vcard"><div class="vh"><b>${esc(v.es)}</b> <span>${esc(v.it)}${v.tense === 'imperfetto' ? ' · imperfetto' : ''}</span></div>${conjTable(v)}${v.note ? `<small>${esc(v.note)}</small>` : ''}</div>`).join('')}</div>` : ''}
-    ${gens.map(g => `<button class="btn ghost sm" data-action="start" data-scope="train" data-arg="${TRAIN_ORDER.find(k => TRAIN[k].filter(g))}">${esc(g.es)}: allenati</button>`).join(' ')}`;
+    ${gens.filter(g => TRAIN.numore.filter(g)).length ? `<button class="btn ghost sm" data-action="start" data-scope="train" data-arg="numore">Allenati: numeri e ore</button>` : ''}`;
 }
 
 function settingsSheet(){
@@ -2409,6 +2576,11 @@ function settingsSheet(){
       <div class="field"><label>Carte nuove al giorno</label>${seg('newPerDay', [10, 20, 30, 50], npd)}<p class="hint">Hai già fatto tutte queste lezioni col tutor: con 20 al giorno rivedi tutto il materiale in circa ${Math.ceil(items().filter(i => !P(i)).length / 20)} giorni, poi restano solo i ripassi.</p></div>
       <div class="field"><label>Obiettivo giornaliero</label>${seg('goal', [30, 50, 100], goal, v => v + ' XP')}</div>
       <div class="field"><label>Suoni</label>${seg('mute', [false, true], !!p.mute, v => v ? 'Spenti' : 'Accesi')}</div>
+      <div class="field"><label>Vibrazione</label>${seg('haptics', [true, false], p.haptics !== false, v => v ? 'Accesa' : 'Spenta')}</div>
+      <div class="field"><label>Voce spagnola</label>
+        ${esVoices.length ? `<div class="voices">${esVoices.slice(0, 8).map(v => `<div class="voice-row ${v === esVoice ? 'on' : ''}"><button class="voice-pick" data-action="voice" data-uri="${esc(v.voiceURI)}"><span class="radio"></span><span class="t-txt"><b>${esc(v.name)}</b><span>${esc(v.lang)}${voiceScore(v) >= 60 ? ' · alta qualità' : ''}</span></span></button><button class="icon-btn" data-action="voice-try" data-uri="${esc(v.voiceURI)}" aria-label="Prova ${esc(v.name)}">${ICON.sound}</button></div>`).join('')}</div>` : `<p class="hint">Su questo dispositivo non ho trovato voci spagnole.</p>`}
+        <p class="hint">Per una voce più naturale scarica una voce di qualità alta. Su iPhone: Impostazioni › Accessibilità › Contenuto letto › Voci › Spagnolo (Spagna), e scegli una voce «Premium» o «Avanzata». Su Mac: Impostazioni di Sistema › Accessibilità › Contenuto letto › Voce di sistema › Gestisci voci. Poi riapri Repaso: la migliore viene scelta da sola.</p></div>
+      <div class="field"><label>Velocità della voce</label>${seg('pace', [0.85, 1, 1.12], p.pace || 1, v => v < 1 ? 'Più lenta' : v > 1 ? 'Più svelta' : 'Normale')}</div>
       <div class="notice" style="margin-top:22px"><b>Come funziona.</b> Ogni carta torna quando stai per dimenticarla (algoritmo FSRS). All’inizio la riconosci, poi la scrivi, poi la usi in una frase. Gli errori tornano nella stessa sessione e finiscono nei Punti deboli.</div>
     </div></div>`);
 }
@@ -2650,6 +2822,7 @@ function scopePool(scope, arg){
   if (scope === 'lesson') return all.filter(i => i.lessonId === arg);
   if (scope === 'unit') return all.filter(i => i.unit === arg);
   if (scope === 'train') return all.filter(TRAIN[arg].filter);
+  if (scope === 'topic') return gramItems(gramById(arg));
   return all;
 }
 // new cards: lessons in the tutor's order; inside a lesson, one card per unit in turn so words, verbs and rules mix
@@ -2969,8 +3142,10 @@ function conclude(r, msg, extra){
     const retry = ex.type === 'gen' ? {...genEx(it, 0), retry:true} : usesOpts(ex) ? {...ex, opts:shuffle(ex.opts), retry:true} : ex.type === 'build' ? {...ex, toks:shuffle(ex.toks), retry:true} : {...ex, retry:true};
     S.queue.splice(Math.min(S.queue.length, S.i + 3 + Math.floor(Math.random()*3)), 0, retry); S.total = S.queue.length;
   }
-  const lines = {ok:['¡Muy bien!','¡Perfecto!','¡Eso es!','¡Genial!','¡Estupendo!'], warn:['¡Casi!'], bad:['Non proprio']};
-  const head = pickOne(lines[r]), correct = correctText(ex);
+  const lines = {ok:['¡Muy bien!','¡Perfecto!','¡Eso es!','¡Genial!','¡Estupendo!','¡Así se hace!','¡Bien hecho!'], warn:['¡Casi!','¡Por poco!'], bad:['Non proprio','Quasi, ma no','Ci riproviamo tra poco']};
+  S.combo = r === 'bad' ? 0 : (S.combo || 0) + 1;
+  const combo = r !== 'bad' && [3, 5, 8, 12, 16, 20, 25, 30].includes(S.combo);
+  const head = pickOne(lines[r]) + (combo ? ` <span class="combo">${S.combo} di fila</span>` : ''), correct = correctText(ex);
   const why = ex.d?.why || (ex.type === 'gen' ? '' : '');
   const rule = it?.ruleId && ['choice','cloze','fix'].includes(ex.type) && RULES[it.ruleId];
   const trans = it && it.it && !['pick','choice','match'].includes(ex.type) && ex.type !== 'tr' && ex.type !== 'gen' && it.kind !== 'drill' ? `${cleanEs(it.es)} = ${it.it}` : ex.d?.it && ex.type !== 'tr' && ex.type !== 'choice' ? ex.d.it : '';
@@ -2987,6 +3162,7 @@ function conclude(r, msg, extra){
       <div class="src">${esc(lessonTag(it)).toUpperCase()}</div></div></div>
     <div style="display:flex;gap:10px">${r === 'bad' && sampleFn && ex.type !== 'gen' ? `<button class="btn ghost" data-action="explain" title="Chiedi a Claude">${ICON.spark} Perché?</button>` : ''}<button class="btn wide ${r === 'bad' ? 'bad' : 'ok'}" style="flex:1" id="cont" data-action="next">Continua</button></div></div>`;
   tone(r === 'bad' ? 'bad' : 'ok');
+  if (combo) setTimeout(() => haptic('combo'), 260);
   if (r !== 'bad' && /^(type|conj|dict|tr|cloze|build|fix)$/.test(ex.type)) speak(ex.type === 'cloze' ? correct : ex.type === 'conj' ? ex.answer : correct);
   if (ex.type === 'gen' && ex.g === 'clock') speak(ex.answer);
   if (ex.type === 'gen' && ex.g === 'num') speak(numEs(ex.n));
@@ -3089,7 +3265,9 @@ function quit(){ saveSession(); S = null; try { speechSynthesis.cancel(); } catc
 
 /* session interactions */
 function selectOpt(i){
+  if (Tk?.kind === 'gram') return gramSelect(i);
   if (!S || S.state !== 'ask') return;
+  haptic('tap');
   const btns = document.querySelectorAll('.opt[data-opt]'); if (!btns[i]) return;
   S.sel = i; btns.forEach((b, j) => b.setAttribute('aria-pressed', j === i));
   if (S.ex.type === 'listen') speak(S.ex.opts[i]);
@@ -3101,6 +3279,7 @@ function tapToken(i, fromLane){
   if (S.state !== 'ask') return;
   const T = S.tokens;
   if (fromLane) T.lane = T.lane.filter(x => x !== i); else if (!T.lane.includes(i)) T.lane.push(i);
+  haptic('tap');
   $('#lane').innerHTML = T.lane.map(x => `<button class="tok" data-lane="${x}">${esc(T.all[x].w)}</button>`).join('');
   document.querySelectorAll('#bank .tok').forEach(b => b.classList.toggle('used', T.lane.includes(+b.dataset.tok)));
   $('#check').disabled = !T.lane.length;
@@ -3109,7 +3288,7 @@ function tapMatch(btn){
   const M = S.matchState; if (!M || S.state !== 'ask' || M.done.has(btn.dataset.id + btn.dataset.m)) return;
   const side = btn.dataset.m;
   document.querySelectorAll(`.opt[data-m="${side}"]`).forEach(b => b.setAttribute('aria-pressed', b === btn));
-  M[side === 'es' ? 'left' : 'right'] = btn;
+  M[side === 'es' ? 'left' : 'right'] = btn; haptic('tap');
   if (side === 'es') speak(S.ex.items.find(i => i.id === btn.dataset.id)?.es);
   if (!(M.left && M.right)) return;
   const a = M.left, b = M.right; M.left = M.right = null;
@@ -3254,7 +3433,7 @@ function sayMic(){
     judgeSay(cands);
   });
   if (!ok) { toast('Il riconoscimento vocale non parte qui: usa la dettatura della tastiera'); return showSay(); }
-  mic?.classList.add('on'); if (lab) lab.textContent = 'Ti ascolto… tocca di nuovo per finire'; if (heard) heard.innerHTML = '';
+  haptic('tap'); mic?.classList.add('on'); if (lab) lab.textContent = 'Ti ascolto… tocca di nuovo per finire'; if (heard) heard.innerHTML = '';
 }
 function judgeSay(cands){
   const T = Tk, q = T.queue[T.i];
@@ -3333,6 +3512,7 @@ REGOLE PER IL TUO MESSAGGIO ("reply")
 - Al massimo 2 frasi brevi (25 parole in tutto). Finisci quasi sempre con una domanda semplice che porta la conversazione verso l’obiettivo.
 - Tempi verbali: ${c.tenses}. Non usare altri tempi.
 - Usa soprattutto il vocabolario che lo studente ha fatto col tutor (sotto). Se serve un’altra parola, scegline una facile e simile all’italiano.
+- Parla come una persona vera di Madrid, calda e spontanea: prima reagisci a quello che ha detto lo studente (¡Anda!, ¡Qué bien!, Vale, Pues…, ¿En serio?, ¡Qué guay!), poi fai la tua domanda. Varia le frasi, niente tono da manuale.
 - Resta nel personaggio e non correggere dentro "reply": le correzioni vanno in "fix" e "note".
 VOCABOLARIO DEL TUTOR: ${v.voc}
 VERBI DEL TUTOR: ${v.verbs}
@@ -3436,7 +3616,7 @@ function convMic(){
     if (text) { ta.value = (before ? before + ' ' : '') + text; convSendState(); $('#c-send')?.focus(); }
   });
   if (!ok) { toast('Il riconoscimento vocale non parte qui: usa la dettatura della tastiera'); return convComposer(); }
-  btn?.classList.add('on');
+  haptic('tap'); btn?.classList.add('on');
 }
 async function saveConvFix(wrong, fix, note, c){
   if (!Store.data.lessons.conv) await Store.put('lessons', 'conv', {title:'Dalle conversazioni', date:todayKey(), summary:'Le frasi che Claude ti ha corretto mentre conversavi. Tornano nel ripasso come esercizi «Correggi l’errore».', topics:[], source:'Parla', createdAt:Date.now()});
@@ -3477,28 +3657,320 @@ function convCard(c){
   const l = lessonOfConv(c);
   return `<button class="card conv-card" data-action="conv-start" data-arg="${c.id}" ${sampleFn ? '' : 'disabled'}><span class="pill ${c.lesson ? '' : 'ex'}">${esc(l ? l.label + ' · ' + l.title : 'Tutto il materiale')}</span><span class="ct">${esc(c.t)}</span><span class="cd">${esc(c.d)}</span></button>`;
 }
-function renderTalk(){
-  const rp = repPool().length;
-  return `<div class="page-head"><h1>Parla</h1><p>Pronuncia e conversazione, solo con quello che hai fatto col tutor.</p></div>
-    <div class="section-title" style="margin-top:6px"><h3>Pronuncia</h3><span class="eyebrow">${canListen() ? 'con il microfono' : 'con la dettatura'}</span></div>
-    <div class="train-grid">
-      <button class="card train-tile" data-action="say-start" data-arg="rep"><span class="tart">${ICON.mic}</span><span class="tt">Leggi ad alta voce</span><span class="td">Frasi delle tue lezioni: leggi e vedi parola per parola cosa capisce uno spagnolo</span><span class="tm">${rp} frasi</span></button>
-      ${SOUNDS.map(x => `<button class="card train-tile" data-action="say-start" data-arg="${x.k}"><span class="tart"><b>${esc(x.art)}</b></span><span class="tt">${esc(x.t)}</span><span class="tm">${soundPool(x).length} parole</span></button>`).join('')}
+function renderPractice(){
+  return `<div class="page-head"><div class="eyebrow">Allenamento libero</div><h1>Pratica</h1><p>Esercizi mirati, pronuncia e conversazione. Tutto quello che fai qui conta anche per il ripasso.</p></div>
+    <div class="section-title" style="margin-top:6px"><h3>Esercizi mirati</h3></div>
+    <div class="train-grid">${TRAIN_ORDER.map(k => trainTile(k)).join('')}</div>
+    <div class="section-title"><h3>Pronuncia</h3><span class="eyebrow">${canListen() ? 'con il microfono' : 'con la dettatura'}</span></div>
+    <div class="card say-panel">
+      <button class="say-main" data-action="say-start" data-arg="rep"><span class="t-art gr">${ICON.mic}</span><span class="t-txt"><b>Leggi ad alta voce</b><span>10 frasi delle tue lezioni. Vedi parola per parola cosa capisce uno spagnolo.</span></span>${ICON.chev}</button>
+      <div class="eyebrow" style="margin:16px 0 8px">Suoni difficili per un italiano</div>
+      <div class="sound-chips">${SOUNDS.map(x => `<button class="sound-chip" data-action="say-start" data-arg="${x.k}"><b>${esc(x.art)}</b><span>${esc(x.t)}</span></button>`).join('')}</div>
     </div>
     ${SR ? '' : `<div class="notice">${esc('Questo browser non ha il riconoscimento vocale integrato: potrai leggere la frase con la dettatura. ' + DICT_TIP)}</div>`}
     <div class="section-title"><h3>Conversazioni</h3><span class="eyebrow">con Claude</span></div>
     ${sampleFn ? '' : `<div class="notice" style="margin:0 0 12px">Le conversazioni usano Claude: apri Repaso da claude.ai con il tuo account.</div>`}
     <div class="conv-grid">${CONV.map(convCard).join('')}</div>
-    <p class="hint">Claude risponde solo con il vocabolario e i tempi verbali delle lezioni fino a quella della conversazione. Ogni frase che scrivi o detti viene corretta, e gli errori tornano nel ripasso.</p>
+    <p class="hint">Claude usa solo il vocabolario e i tempi verbali delle lezioni fino a quella della conversazione. Ogni tua frase viene corretta, e gli errori tornano nel ripasso.</p>
     ${modeNote()}`;
 }
-function todayTalk(){
-  const c = CONV[Math.floor(Date.now() / DAY) % CONV.length], l = lessonOfConv(c);
-  return `<div class="section-title"><h3>Parla</h3><button class="link" data-go="parla">Tutto</button></div>
-    <div class="grid2" style="margin-top:0">
-      <button class="card tap-card" data-action="conv-start" data-arg="${c.id}" ${sampleFn ? '' : 'disabled'}><span class="eyebrow">Conversazione di oggi${l ? ' · ' + esc(l.label) : ''}</span><span class="big" style="font-size:1.3rem;line-height:1.2">${esc(c.t)}</span><span class="sub">${esc(sampleFn ? c.d : 'Apri Repaso da claude.ai per conversare con Claude')}</span></button>
-      <button class="card tap-card" data-action="say-start" data-arg="rep"><span class="eyebrow">Pronuncia</span><span class="big" style="font-size:1.3rem;line-height:1.2">Leggi ad alta voce</span><span class="sub">10 frasi delle tue lezioni, con il microfono</span></button>
-    </div>`;
+
+/* ---------------- Grammatica: teoria guidata ----------------
+   Ogni argomento segue lo stesso percorso didattico:
+   osserva (input evidenziato) → scopri (la regola la deduci tu) → la regola (spiegazione, tabella,
+   confronto con l'italiano, trappole) → capisci (domande sul significato) → pratica (gli esercizi del tutor, poi il ripasso). */
+const GRAM_GROUPS = [['verbi','I verbi'],['frase','Nomi, luoghi e ore'],['nexos','Le parole piccole']];
+const GRAMMAR = [
+  {id:'ser-estar', g:'verbi', art:'ser·estar', t:'Ser o estar', sub:'I due «essere» dello spagnolo',
+    rules:['S3|Usi di SER','S3|Usi di ESTAR','S3|Aggettivi che cambiano significato'], verbs:i => ['ser','estar'].includes(i.es) && i.tense === 'presente',
+    obs:['**Soy** español, de Madrid. | Sono spagnolo, di Madrid.','Luis **está** en Lisboa. | Luis è a Lisbona.','Mi casa **es** de madera. | La mia casa è di legno.','Hoy **estoy** muy bien. | Oggi sto molto bene.'],
+    disc:{q:'Guarda i verbi evidenziati. Quando si usa **estar**?', o:['Per dire dove si trova qualcuno e come sta','Per dire chi è o da dove viene qualcuno','Sempre quando c’è «hoy»'], why:'Estar dice dove si trova qualcosa e com’è in questo momento. Ser dice chi è, cos’è, di cosa è fatto.'},
+    rule:'SER risponde a «chi è? cos’è? com’è fatto?»: identità, origine, professione, materia, possesso, giorno e ora, prezzo, eventi che hanno luogo. ESTAR risponde a «dov’è? come sta?»: posizione, stato fisico o del momento, stato civile, con il gerundio (estoy trabajando) e con il participio (está abierto).',
+    table:['| ser | estar','yo | soy | estoy','tú | eres | estás','él, ella, usted | es | está','nosotros | somos | estamos','vosotros | sois | estáis','ellos, ustedes | son | están'],
+    vs:['Sono a Roma. | Estoy en Roma. | Il luogo vuole estar, anche se in italiano diciamo «sono».','Sono sposato. | Estoy casado. | Lo stato civile va con estar (scheda del tutor).','La paella è buonissima. | La paella está muy rica. | Rico con estar = buono di sapore; con ser = ricco.'],
+    traps:['Gli eventi che hanno luogo vogliono ser: la conferencia es en el aula magna.','Le ore e i giorni vogliono ser: son las tres, hoy es martes.','Alcuni aggettivi cambiano significato: ser listo (sveglio) / estar listo (pronto).'],
+    cap:[{q:'Quale frase dice che il negozio **adesso** è aperto?', o:['La tienda está abierta.','La tienda es grande.'], why:'Participio (abierto) e stato del momento: estar.'},
+         {q:'Quale frase parla del **carattere** di Juan?', o:['Juan es aburrido.','Juan está aburrido.'], why:'Ser aburrido = è noioso. Estar aburrido = si sta annoiando.'}]},
+  {id:'presente', g:'verbi', art:'-o -as', t:'Il presente', sub:'Verbi in -ar, -er, -ir, usted e ustedes',
+    rules:['L1|Usted e ustedes','L8|I cinque usi del presente'], verbs:i => i.tense === 'presente' && ['L1','L2'].includes(i.lessonId) && !['ser','estar','tener'].includes(i.es),
+    obs:['Yo **hablo** español y francés. | Parlo spagnolo e francese.','Nosotros **aprendemos** español. | Impariamo lo spagnolo.','¿Dónde **vivís** vosotros? | Dove abitate voi?','¿Ustedes **hablan** inglés? | Voi (cortesia) parlate inglese?'],
+    disc:{q:'Hablo, aprendo, vivo: cosa hanno in comune le forme di **yo**?', o:['Finiscono tutte in -o','Sono uguali all’infinito','Cambiano la vocale della radice'], why:'Per tutti e tre i gruppi, la forma di yo finisce in -o. Le differenze arrivano nelle altre persone.'},
+    rule:'Togli -AR, -ER o -IR e aggiungi la desinenza. -AR: -o, -as, -a, -amos, -áis, -an. -ER: -o, -es, -e, -emos, -éis, -en. -IR come -ER, tranne nosotros (-imos) e vosotros (-ís). Usted e ustedes, il «Lei» e il «Voi» di cortesia, usano la 3ª persona.',
+    table:['| hablar | aprender | vivir','yo | hablo | aprendo | vivo','tú | hablas | aprendes | vives','él, ella, usted | habla | aprende | vive','nosotros | hablamos | aprendemos | vivimos','vosotros | habláis | aprendéis | vivís','ellos, ustedes | hablan | aprenden | viven'],
+    vs:['Lei parla spagnolo? | ¿Usted habla español? | Il «Lei» è usted, con il verbo alla 3ª persona.','Voi abitate a Roma (con gli amici). | Vosotros vivís en Roma. | In Spagna vosotros si usa sempre tra amici.','Domani vado a Roma. | Mañana voy a Roma. | Come in italiano, il presente può indicare un futuro vicino.'],
+    traps:['Vosotros ha l’accento: habláis, aprendéis, vivís.','Il soggetto si omette, come in italiano: hablo, non sempre yo hablo.','Il presente serve anche per le istruzioni (coges la primera calle) e per raccontare il passato (mi abuelo nace en 1920).'],
+    cap:[{q:'Chi parla in «¿**Habláis** inglés?»', o:['Si rivolge a più amici','Si rivolge a una persona con il Lei','Parla di sé'], why:'-áis è la desinenza di vosotros.'},
+         {q:'«Coges la primera calle a la derecha». Questa frase è…', o:['un’istruzione','un ricordo','un’abitudine'], why:'Uno degli usi del presente: dare indicazioni.'}]},
+  {id:'cambio', g:'verbi', art:'e→ie', t:'Il cambio vocalico', sub:'cierro, vuelvo, pido',
+    rules:['S2|Come funziona','L5|Empezar, cerrar','L6|Uguali, cambiano tutti allo stesso modo'], verbs:i => i.tense === 'presente' && ['S2','L5','L6'].includes(i.lessonId),
+    obs:['La tienda **cierra** a las nueve. | Il negozio chiude alle nove.','Nosotros **cerramos** a las dos. | Noi chiudiamo alle due.','Tú **vuelves** a casa a las seis. | Torni a casa alle sei.','Yo **pido** la cuenta. | Chiedo il conto.'],
+    disc:{q:'Cierra ma cerramos, vuelves ma volvemos. In quali persone la vocale **non** cambia?', o:['Nosotros e vosotros','Yo e tú','Solo ellos'], why:'La vocale cambia quando l’accento cade sulla radice. In nosotros e vosotros l’accento cade sulla desinenza.'},
+    rule:'Nel presente la vocale della radice cambia in tutte le persone tranne nosotros e vosotros. Tre gruppi: E → IE (cerrar: cierro), O → UE (volver: vuelvo), E → I (pedir: pido). Dall’infinito non si vede: si impara verbo per verbo.',
+    table:['| cerrar | volver | pedir','yo | cierro | vuelvo | pido','tú | cierras | vuelves | pides','él, ella | cierra | vuelve | pide','nosotros | cerramos | volvemos | pedimos','vosotros | cerráis | volvéis | pedís','ellos | cierran | vuelven | piden'],
+    vs:['Ricordo il tuo nome. | Recuerdo tu nombre. | Recordar: O → UE. Non «recordo».','Preferisci il cinema. | Prefieres el cine. | Preferir: E → IE. Non «preferes».','Mi sveglio alle sette. | Me despierto a las siete. | Anche i riflessivi cambiano.'],
+    traps:['Alcuni yo sono speciali: salgo, hago, corrijo, elijo.','Con la G davanti alla O si scrive J: corregir → corrijo.'],
+    cap:[{q:'Quale di queste forme **non** esiste?', o:['vuelvemos','cerramos','pedimos'], why:'Con nosotros niente UE: volvemos.'},
+         {q:'«¿A qué hora te acuestas?» chiede…', o:['a che ora vai a letto','a che ora ti alzi','a che ora torni'], why:'Acostarse (O → UE): te acuestas.'}]},
+  {id:'imperfetto', g:'verbi', art:'-aba', t:'L’imperfetto', sub:'Abitudini e descrizioni del passato',
+    rules:['L13|L\'imperfetto'], verbs:i => i.tense === 'imperfetto',
+    obs:['Antes **vivíamos** en Roma. | Prima abitavamo a Roma.','En el recreo **jugábamos** en el patio. | Nella ricreazione giocavamo in cortile.','La profesora **era** muy simpática. | La professoressa era molto simpatica.','De pequeños **íbamos** a la playa. | Da piccoli andavamo al mare.'],
+    disc:{q:'Di cosa parlano queste frasi?', o:['Abitudini e descrizioni del passato','Un fatto successo una volta sola','Progetti per il futuro'], why:'Come l’imperfetto italiano: cosa si faceva di solito (giocavamo) e com’era (era simpatica).'},
+    rule:'-AR: -aba, -abas, -aba, -ábamos, -abais, -aban. -ER e -IR: -ía, -ías, -ía, -íamos, -íais, -ían. Solo tre irregolari: ser (era), ir (iba), ver (veía). Si usa come l’imperfetto italiano.',
+    table:['| cantar | comer | ser | ir','yo | cantaba | comía | era | iba','tú | cantabas | comías | eras | ibas','él, ella | cantaba | comía | era | iba','nosotros | cantábamos | comíamos | éramos | íbamos','vosotros | cantabais | comíais | erais | ibais','ellos | cantaban | comían | eran | iban'],
+    vs:['Studiavo matematica. | Estudiaba matemáticas. | La -v- italiana diventa -b- nei verbi in -AR.','Andavamo al mare. | Íbamos a la playa. | Ir è irregolare: iba, íbamos.'],
+    traps:['Nosotros in -AR ha l’accento (cantábamos), vosotros no (cantabais).','Yo e él hanno la stessa forma: yo cantaba, él cantaba.'],
+    cap:[{q:'«Cuando **era** pequeño, **vivía** en Madrid». Significa che…', o:['da bambino abitava a Madrid','adesso abita a Madrid','andrà a vivere a Madrid'], why:'Era, vivía: una situazione del passato.'}]},
+  {id:'perifrasi', g:'verbi', art:'ir a', t:'Tener que, acabar de, ir a, soler', sub:'Verbo + infinito',
+    rules:['S3|Tener que, acabar de, ir a','L7|Soler + infinito'],
+    obs:['**Tienes que** hacer los deberes. | Devi fare i compiti.','**Acabo de** llamar a Juan. | Ho appena telefonato a Juan.','Mañana **voy a** comprar un coche. | Domani compro una macchina.','Los domingos **suelo** ir al cine. | La domenica di solito vado al cinema.'],
+    disc:{q:'«**Acabo de** llamar a Juan». Quando ho telefonato?', o:['Un attimo fa','Domani','Ogni giorno'], why:'Acabar de + infinito = aver appena fatto.'},
+    rule:'Verbo coniugato + infinito. TENER QUE = dovere. ACABAR DE = aver appena fatto. IR A = futuro vicino o programmato. SOLER = fare di solito (suelo, sueles…: O → UE).',
+    table:['| significa | esempio','tener que + inf. | dovere | Tengo que estudiar.','acabar de + inf. | aver appena | Acabo de comer.','ir a + inf. | futuro | Voy a viajar.','soler + inf. | di solito | Suelo leer.'],
+    vs:['Ho appena mangiato. | Acabo de comer. | Acabar de si usa al presente.','Di solito vado in montagna. | Suelo ir a la montaña. | Al posto di «di solito», un verbo.'],
+    traps:['Non dimenticare A e DE: voy a comprar, acabo de llamar.','Si dice tener que, non «tener de».'],
+    cap:[{q:'Quale frase esprime un **obbligo**?', o:['Tengo que trabajar.','Suelo trabajar.','Acabo de trabajar.'], why:'Tener que = dovere.'}]},
+  {id:'perfecto', g:'verbi', art:'he·fui', t:'Perfecto o indefinido', sub:'He estado o estuve: decide il tempo',
+    rules:['S3|Perfecto o indefinido'],
+    obs:['Hoy **he estado** en Roma. | Oggi sono stato a Roma.','Ayer **estuve** en Roma. | Ieri sono stato a Roma.','Esta semana **he ido** al cine. | Questa settimana sono andato al cinema.','La semana pasada **fui** al cine. | La settimana scorsa sono andato al cinema.'],
+    disc:{q:'Cosa decide se dire **he estado** o **estuve**?', o:['L’espressione di tempo','Il soggetto','Se la frase è negativa'], why:'Hoy, esta semana: perfecto. Ayer, la semana pasada: indefinido.'},
+    rule:'Decide l’indicatore di tempo. PERFECTO (he estado) con un tempo che arriva fino a ora: hoy, esta mañana, esta semana, este año, ya, todavía, alguna vez, nunca, hace un rato. INDEFINIDO (estuve) con un tempo chiuso: ayer, anoche, el otro día, la semana pasada, el año pasado, en 1985, hace dos días.',
+    table:['Perfecto · he estado | Indefinido · estuve','hoy | ayer','esta semana | la semana pasada','este año | el año pasado','ya, todavía, alguna vez | en 1985, en primavera','hace un rato | hace dos horas'],
+    vs:['Ieri sono stato a Roma. | Ayer estuve en Roma. | In italiano basta il passato prossimo. In spagnolo «ayer» vuole l’indefinido.','Sei mai stato a Parigi? | ¿Has estado alguna vez en París? | Esperienza della vita: perfecto.'],
+    traps:['Senza indicatore di tempo si usa il perfecto: he hablado con Luis.','Hace + tempo vuole l’indefinido (hace dos horas vi a Juan), ma hace un rato vuole il perfecto.'],
+    cap:[{q:'«El mes pasado ___ un coche». Quale tempo serve?', o:['Indefinido: compré','Perfecto: he comprado'], why:'El mes pasado è un tempo chiuso.'}]},
+  {id:'gustar', g:'verbi', art:'me gusta', t:'Gustar e i gusti', sub:'Me gusta, me gustan, a mí también',
+    rules:['L8|Gustar','L8|También, tampoco, sí, no'],
+    obs:['Me **gusta** leer. | Mi piace leggere.','Me **gustan** los libros de intriga. | Mi piacciono i gialli.','A nosotros **nos** encantan las películas de miedo. | A noi piacciono moltissimo i film dell’orrore.','—No me gusta la lírica. —A mí **sí**. | —Non mi piace la lirica. —A me sì.'],
+    disc:{q:'**Gusta** o **gustan**: da cosa dipende?', o:['Dalla cosa che piace','Dalla persona a cui piace','Dal tempo verbale'], why:'Come «piace / piacciono»: il verbo si accorda con la cosa che piace.'},
+    rule:'Gustar funziona come «piacere»: il soggetto è la cosa che piace. Me gusta + singolare o infinito; me gustan + plurale. Pronomi: me, te, le, nos, os, les. Allo stesso modo: encantar, apetecer, doler.',
+    table:['a… | pronome | esempio','a mí | me | me gusta el cine','a ti | te | te gustan los libros','a él, ella, usted | le | le gusta leer','a nosotros | nos | nos encanta el mar','a vosotros | os | os gusta salir','a ellos, ustedes | les | les gustan las motos'],
+    vs:['Mi piacciono i film. | Me gustan las películas. | Uguale all’italiano: piacciono / gustan.','Anche a me. | A mí también. | Dopo una frase negativa: a mí tampoco (neanche a me).'],
+    traps:['A lui piace = le gusta, non «lo gusta».','Con più infiniti il verbo resta singolare: me gusta leer y escribir.'],
+    cap:[{q:'«A mi madre **le** encantan las plantas». A chi piacciono le piante?', o:['A mia madre','A me','A tutte e due'], why:'Le si riferisce a mi madre.'},
+         {q:'—Me gusta el fútbol. —A mí **no**. Cosa risponde?', o:['A me no','Anche a me','Neanche a me'], why:'Non è d’accordo con una frase positiva: a mí no.'}]},
+  {id:'ir-venir', g:'verbi', art:'ir·venir', t:'Ir, venir, llevar, traer', sub:'E pedir o preguntar',
+    rules:['S3|Ir o venir','S3|Llevar o traer','S3|Pedir o preguntar'],
+    obs:['(Sono a casa) ¿A qué hora **vienes** a casa? | A che ora vieni a casa?','(Vado da te) ¿A qué hora **voy** a tu casa? | A che ora vengo a casa tua?','**Tráeme** un vaso de agua. | Portami un bicchiere d’acqua.','**Pregunta** dónde está la plaza. | Chiede dov’è la piazza.'],
+    disc:{q:'Vai a trovare un amico. «A che ora vengo da te?» in spagnolo è…', o:['¿A qué hora voy a tu casa?','¿A qué hora vengo a tu casa?'], why:'Chi parla si sposta verso un luogo dove non è: ir.'},
+    rule:'Conta dove si trova chi parla. VENIR e TRAER: verso chi parla. IR e LLEVAR: lontano da chi parla, o verso un posto dove chi parla non è. PEDIR = chiedere per avere. PREGUNTAR = chiedere per sapere.',
+    table:['| verso chi parla | lontano da chi parla','muoversi | venir | ir','portare | traer | llevar'],
+    vs:['Vengo da te alle otto. | Voy a tu casa a las ocho. | In italiano «vengo» anche quando vado da te.','Ti chiedo un favore. | Te pido un favor. | Per avere: pedir.','Ti chiedo dove abiti. | Te pregunto dónde vives. | Per sapere: preguntar.'],
+    traps:['Per un italiano l’errore tipico è «vengo» al posto di voy.','El profesor pregunta la lección = il professore interroga.'],
+    cap:[{q:'Al telefono, da Madrid: «Quando vieni a Madrid?»', o:['¿Cuándo vienes a Madrid?','¿Cuándo vas a Madrid?'], why:'Chi parla è a Madrid: venir.'}]},
+  {id:'recordar', g:'verbi', art:'me acuerdo', t:'Recordar e acordarse', sub:'Ricordare e ricordarsi',
+    rules:['L13|Recordar o acordarse'], verbs:i => ['recordar','acordarse'].includes(i.es) && i.lessonId === 'L13',
+    obs:['Yo **recuerdo** tu nombre. | Ricordo il tuo nome.','¿Te **acuerdas de** mí? | Ti ricordi di me?','No me **acuerdo de** su apellido. | Non mi ricordo il suo cognome.','Me **acuerdo de que** vivíamos en Madrid. | Mi ricordo che abitavamo a Madrid.'],
+    disc:{q:'Quale dei due verbi vuole **me, te, se** e **de**?', o:['acordarse','recordar'], why:'Acordarse è riflessivo e vuole de. Recordar no.'},
+    rule:'RECORDAR non è riflessivo e va senza de: recuerdo tu nombre. ACORDARSE è riflessivo e vuole DE: me acuerdo de ti, me acuerdo de que… Tutti e due cambiano O → UE.',
+    table:['| struttura | esempio','recordar | recordar + cosa | recuerdo tu nombre','acordarse | me acuerdo de + cosa | me acuerdo de tu nombre'],
+    vs:['Mi ricordo di te. | Me acuerdo de ti. / Te recuerdo. | Mai «me recuerdo de ti».'],
+    traps:['Con nosotros niente UE: recordamos, nos acordamos.'],
+    cap:[{q:'Quale frase è corretta?', o:['No me acuerdo de su apellido.','No me recuerdo su apellido.'], why:'Con me serve acordarse + de.'}]},
+  {id:'articoli', g:'frase', art:'el·los', t:'Articoli e plurale', sub:'el, la, un, una e come si forma il plurale',
+    rules:['L1|Gli articoli','L1|Il plurale','L4|Primer e tercer'],
+    obs:['**El** teclado y **la** pantalla. | La tastiera e lo schermo.','Esto es **un** ordenador. | Questo è un computer.','Dos **franceses** y dos **alemanes**. | Due francesi e due tedeschi.','Vivo en el **primer** piso. | Abito al primo piano.'],
+    disc:{q:'Teclado, ordenador, estudiante: davanti ai nomi maschili si usa sempre…', o:['el / un','lo / uno','il / uno'], why:'In spagnolo non esistono gli articoli «lo» e «uno» davanti ai nomi.'},
+    rule:'Determinativi: el, la, los, las. Indeterminativi: un, una, unos, unas. Plurale: vocale + S (pantallas), consonante + ES (franceses), -í accentata + ES (marroquíes). Primero e tercero diventano primer e tercer davanti a un nome maschile.',
+    table:['| maschile | femminile','singolare | el · un | la · una','plurale | los · unos | las · unas'],
+    vs:['lo schermo | la pantalla | Il genere può cambiare: pantalla è femminile.','uno studente | un estudiante | Mai «uno» davanti al nome.','dei libri | unos libros | «Dei, delle» diventano unos, unas.'],
+    traps:['Al plurale l’accento scritto può sparire: francés → franceses, alemán → alemanes.'],
+    cap:[{q:'Quale plurale è corretto?', o:['marroquíes','marroquís','marroquies'], why:'-í accentata + ES, l’accento resta.'}]},
+  {id:'possessivi', g:'frase', art:'mi·tu', t:'I possessivi', sub:'mi casa, tus zapatos, nuestro yate',
+    rules:['L2|Gli aggettivi possessivi'], gens:['poss'],
+    obs:['Es **mi** casa. | È la mia casa.','**Tus** zapatos. | Le tue scarpe.','**Nuestro** yate. | Il nostro yacht.','(Elena y Silvia) **Sus** mochilas. | I loro zaini.'],
+    disc:{q:'«Es mi casa». Cosa manca rispetto a «è **la** mia casa»?', o:['L’articolo','Il verbo','Niente'], why:'Davanti al nome il possessivo spagnolo non vuole l’articolo.'},
+    rule:'Il possessivo davanti al nome non vuole articolo. Si accorda con la cosa posseduta: mi/mis, tu/tus, su/sus, nuestro/a/os/as, vuestro/a/os/as, su/sus. Solo nuestro e vuestro hanno il femminile.',
+    table:['di chi | una cosa | più cose','yo | mi | mis','tú | tu | tus','él, ella, usted | su | sus','nosotros | nuestro, nuestra | nuestros, nuestras','vosotros | vuestro, vuestra | vuestros, vuestras','ellos, ustedes | su | sus'],
+    vs:['la mia giacca | mi chaqueta | Senza articolo.','il suo libro, il loro libro | su libro | Su vale per lui, lei, Lei e loro.'],
+    traps:['Mi senza accento è il possessivo; mí con l’accento è il pronome: a mí.'],
+    cap:[{q:'«**Su** coche» può voler dire…', o:['la sua o la loro macchina','solo la macchina di lui','la tua macchina'], why:'Su vale per tutte le terze persone: il contesto chiarisce.'}]},
+  {id:'hay', g:'frase', art:'hay', t:'Hay o está', sub:'C’è, ci sono',
+    rules:['L3|C\'è, ci sono: hay o está/están'],
+    obs:['**Hay** un restaurante en la plaza. | C’è un ristorante nella piazza.','¿Dónde **está** la estación? | Dov’è la stazione?','**Hay** muchos museos en mi ciudad. | Ci sono molti musei nella mia città.','Mi coche **está** en el aparcamiento. | La mia macchina è nel parcheggio.'],
+    disc:{q:'Guarda cosa viene dopo il verbo. Quando si usa **hay**?', o:['Con un, unos, numeri, muchos o senza articolo','Con el, la e i nomi propri','Solo con i plurali'], why:'Hay presenta qualcosa di nuovo. Está localizza qualcosa di già noto.'},
+    rule:'HAY presenta qualcosa: un, una, unos, numeri, muchos, varios, o nessun articolo. ESTÁ / ESTÁN localizzano qualcosa di già noto: el, la, los, las, nomi propri, possessivi (mi, tu…), dimostrativi (este, ese).',
+    table:['HAY · c’è, ci sono | ESTÁ, ESTÁN · è, sono','hay un banco | el banco está','hay cinco bares | los bares están','hay naranjas | mis naranjas están'],
+    vs:['La farmacia è in questa via? | ¿Está la farmacia en esta calle? | Con «la» non si usa hay.','Ci sono molti musei. | Hay muchos museos. | Hay non cambia al plurale.'],
+    traps:['Hay non ha plurale: hay un bar, hay dos bares.'],
+    cap:[{q:'Quale frase chiede se in questa via esiste **una** farmacia qualsiasi?', o:['¿Hay una farmacia en esta calle?','¿Está la farmacia en esta calle?'], why:'Una farmacia qualunque, nuova nel discorso: hay.'}]},
+  {id:'ubicadores', g:'frase', art:'sobre', t:'Sobre, en, encima de, arriba', sub:'Tutti si traducono «su»',
+    rules:['S1|Sobre','S1|En','S1|Encima de','S1|Arriba'], gens:['ubic'],
+    obs:['El libro está **sobre** la mesa. | Il libro è sul tavolo.','Pon la lasaña **en** el horno. | Metti la lasagna nel forno.','Hay un cuadro muy **encima de** la cama. | C’è un quadro molto sopra il letto.','El piso de **arriba**. | Il piano di sopra.'],
+    disc:{q:'Quale dei due può avere **muy** davanti?', o:['encima de','sobre'], why:'Sobre non accetta avverbi vicino: si dice muy encima de.'},
+    rule:'SOBRE: appoggiato sulla superficie, senza avverbi vicino. EN: luogo generico, anche «dentro» (en el horno). ENCIMA DE: come sobre, ma accetta muy, más e la costruzione con… encima. ARRIBA: in alto, su; accetta avverbi e de (más arriba, la parte de arriba).',
+    table:['| esempio | quando','sobre | sobre la mesa | appoggiato, mai con muy','en | en la mesa, en el horno | generico, anche dentro','encima de | muy encima de la cama | va bene quasi sempre','arriba | el piso de arriba | in alto, su'],
+    vs:['Metti la lasagna nel forno. | Pon la lasaña en el horno. | «Dentro» si dice con en.','Più in alto del tavolo. | Más arriba de la mesa. | Con «más»: arriba.'],
+    traps:['Un quadro appeso al muro sopra il tavolo non è «en la mesa».'],
+    cap:[{q:'Il gatto dorme sul divano:', o:['El gato está sobre el sofá.','El gato está arriba el sofá.'], why:'Appoggiato sulla superficie: sobre (o en, encima del).'}]},
+  {id:'ore', g:'frase', art:'y cuarto', t:'L’ora e gli appuntamenti', sub:'Es la una, son las dos, quedar',
+    rules:['L5|Dire l\'ora','L5|Quedar o cita'], gens:['clock','clockw'],
+    obs:['**Es** la una y diez. | È l’una e dieci.','**Son** las tres y media. | Sono le tre e mezza.','Son las cinco **menos** cuarto. | Sono le cinque meno un quarto.','¿A qué hora **quedamos**? | A che ora ci vediamo?'],
+    disc:{q:'4:45 si dice «las cinco **menos** cuarto». Come funziona?', o:['Dopo la mezza si conta dall’ora dopo','Si dice sempre l’ora dopo','È un’eccezione da imparare'], why:'Fino alla mezza: y. Dopo la mezza: ora seguente + menos.'},
+    rule:'Es la una; son las dos, las tres… Fino alla mezza: ora + y (y cinco, y cuarto, y media). Dopo la mezza: ora seguente + menos (menos veinte, menos cuarto). Esatta: en punto. Parti del giorno: de la mañana, de la tarde, de la noche. Con gli amici si queda; dal medico si pide una cita.',
+    table:['ora | in spagnolo','7:00 | son las siete en punto','7:15 | son las siete y cuarto','7:30 | son las siete y media','7:40 | son las ocho menos veinte','13:05 | es la una y cinco de la tarde'],
+    vs:['Ci vediamo alle otto? | ¿Quedamos a las ocho? | Con gli amici: quedar.','Vorrei un appuntamento col dottore. | Quería pedir una cita con el doctor. | Appuntamento formale: cita.'],
+    traps:['Con la una il verbo è singolare: es la una.'],
+    cap:[{q:'«Son las diez menos diez». Che ore sono?', o:['9:50','10:10','10:50'], why:'Dieci meno dieci minuti.'}]},
+  {id:'muy-mucho', g:'nexos', art:'muy', t:'Muy o mucho', sub:'Molto, in due modi',
+    rules:['S3|Muy o mucho'],
+    obs:['Mi hermano es **muy** alto. | Mio fratello è molto alto.','Tiene **mucho** dinero. | Ha molti soldi.','He comido **mucho**. | Ho mangiato molto.','Madrid es **mucho** más grande. | Madrid è molto più grande.'],
+    disc:{q:'Muy alto, mucho dinero. Cosa cambia?', o:['Muy con aggettivi, mucho con nomi','Muy al singolare, mucho al plurale','Sono sinonimi'], why:'Muy accompagna aggettivi e avverbi, mucho nomi e verbi.'},
+    rule:'MUY davanti ad aggettivi e avverbi: muy alto, muy bien. MUCHO davanti ai nomi, accordato (mucha suerte, muchas plantas), e dopo i verbi (viajan mucho). Eccezioni: mucho más, mucho menos, mucho mejor, mucho peor, mucho antes, mucho después.',
+    table:['davanti a… | si usa | esempio','aggettivo, avverbio | muy | muy cansado, muy bien','nome | mucho, mucha, muchos, muchas | muchas plantas','dopo un verbo | mucho | trabajo mucho','más, menos, mejor, antes | mucho | mucho mejor'],
+    vs:['Molto bello. | Muy bonito. | L’italiano usa «molto» per tutto; lo spagnolo distingue.','Molte grazie. | Muchas gracias. | Davanti al nome mucho si accorda.'],
+    traps:['Mai «muy más» o «muy mejor»: mucho más, mucho mejor.'],
+    cap:[{q:'Quale frase è corretta?', o:['Es mucho mejor.','Es muy mejor.'], why:'Mejor è un’eccezione: mucho mejor.'}]},
+  {id:'nexos', g:'nexos', art:'pero', t:'Pero, sino e i connettivi', sub:'aunque, como, además, por fin…',
+    rules:['L11|Pero o sino','L11|I connettivi del tutor'],
+    obs:['Me gusta el tenis **pero** no el fútbol. | Mi piace il tennis ma non il calcio.','No vivo en Roma **sino** en Velletri. | Non abito a Roma ma a Velletri.','**Aunque** trabaja mucho, gana poco. | Anche se lavora molto, guadagna poco.','**Como** mi padre no trabaja, nos vamos a la playa. | Siccome mio padre non lavora, andiamo al mare.'],
+    disc:{q:'«No vivo en Roma **sino** en Velletri». Cosa fa sino?', o:['Corregge dopo una negazione','Aggiunge un’informazione','Indica una causa'], why:'No esto sino esto otro: sino sostituisce l’informazione negata.'},
+    rule:'PERO = ma, aggiunge. SINO = ma, dopo una negazione, per correggere. Altri connettivi: aunque (anche se), como (siccome, a inizio frase), además (inoltre), sin embargo (però, tuttavia), de hecho (infatti), por fin (finalmente, con sollievo), al final (alla fine), por último (infine, in un elenco), ya no (non più), ahora ya (ormai).',
+    table:['italiano | español','anche se | aunque','siccome | como','inoltre | además','tuttavia | sin embargo','infatti | de hecho','finalmente! | por fin','non più | ya no','ormai | ahora ya'],
+    vs:['Non mi piace il tennis ma il calcio. | No me gusta el tenis sino el fútbol. | Correzione: sino.','Infatti! | ¡Claro! | Come esclamazione non si dice de hecho.'],
+    traps:['Se dopo arriva un nuovo verbo, si usa pero: no me gusta el tenis pero me gusta el fútbol.','Como = siccome solo a inizio frase.'],
+    cap:[{q:'«**Aunque** llueve, salgo». Significa…', o:['Anche se piove, esco.','Siccome piove, esco.','Quando piove, esco.'], why:'Aunque = anche se.'}]},
+  {id:'indefiniti', g:'nexos', art:'algo', t:'Algo, alguien, alguno', sub:'Gli indefiniti, otro, cualquier',
+    rules:['L11|Algo, alguien, alguno','L11|Otro, los otros, los demás','L11|Cualquier o cualquiera','L11|Ne e ci'],
+    obs:['¿Hay **algo** en la nevera? | C’è qualcosa in frigo?','¿Hay **alguien** en el baño? | C’è qualcuno in bagno?','No tengo **ningún** bolígrafo rojo. | Non ho nessuna penna rossa.','Necesito **cualquier** cuaderno. | Mi serve un quaderno qualsiasi.'],
+    disc:{q:'**Algo** e **alguien**: qual è la differenza?', o:['Algo per le cose, alguien per le persone','Algo singolare, alguien plurale','Nessuna'], why:'Algo, nada: cose. Alguien, nadie: persone.'},
+    rule:'ALGO / NADA per le cose. ALGUIEN / NADIE per le persone. ALGUNO / NINGUNO per cose e persone di un gruppo: davanti a un nome maschile diventano algún, ningún. CUALQUIER davanti al nome, CUALQUIERA dopo o da solo. Un altro = otro (mai «un otro»). Ne e ci non esistono: si omettono.',
+    table:['| c’è | non c’è','cose | algo | nada','persone | alguien | nadie','di un gruppo | alguno, algún | ninguno, ningún'],
+    vs:['un altro giorno | otro día | Niente «un» davanti a otro.','Ne ho molti. | Tengo muchos. | Il «ne» sparisce.','Ci vado. | Voy. | Anche il «ci» sparisce.'],
+    traps:['Con nadie e nada dopo il verbo serve no: no hay nadie, no tengo nada.'],
+    cap:[{q:'—¿Hay algún cine por aquí? —No, no hay **ninguno**. La risposta significa…', o:['Non ce n’è nessuno.','Non c’è nessuna persona.','Non c’è niente.'], why:'Ninguno sostituisce «ningún cine».'}]},
+  {id:'por-para', g:'nexos', art:'por·para', t:'Por o para', sub:'Due modi di dire «per»',
+    rules:['S3|POR','S3|PARA'],
+    obs:['Trabajo **por** necesidad. | Lavoro per necessità.','Trabajo **para** vivir. | Lavoro per vivere.','Paseo **por** Roma. | Passeggio per Roma.','Esto es **para** ti. | Questo è per te.'],
+    disc:{q:'Trabajo **por** necesidad, trabajo **para** vivir. Quale indica lo scopo?', o:['para','por'], why:'Para guarda avanti, verso lo scopo. Por indica la causa.'},
+    rule:'PARA guarda avanti: scopo (para vivir), destinatario (para ti), destinazione (sale para Madrid), opinione (para mí), scadenza (para el martes), estar para = stare per. POR indica causa o percorso: causa (por necesidad), parti del giorno (por la tarde), prezzo e velocità (por dos euros, por hora), mezzo (por teléfono), attraverso (por Roma), chi fa l’azione (escrito por Cervantes), al posto di (por ti).',
+    table:['POR | PARA','causa: por necesidad | scopo: para vivir','attraverso: por Roma | destinazione: para Madrid','mezzo: por teléfono | destinatario: para ti','parti del giorno: por la tarde | scadenza: para el martes'],
+    vs:['Lo compro per due euro. | Lo compro por dos euros. | Prezzo: por.','Scritto da Cervantes. | Escrito por Cervantes. | Il «da» del passivo è por.'],
+    traps:['Estar por + infinito = ancora da fare. Estar para + infinito = stare per.'],
+    cap:[{q:'«Hoy trabajo **por** ti» significa…', o:['Oggi lavoro al posto tuo.','Oggi lavoro e il risultato è per te.'], why:'Por = al posto di qualcuno.'}]},
+  {id:'preposizioni', g:'nexos', art:'en·a', t:'I verbi con preposizione', sub:'pensar en, llegar a, soñar con',
+    rules:['S3|Verbi con preposizione obbligata'],
+    obs:['Pienso **en** ti. | Penso a te.','Llego **a** Londres. | Arrivo a Londra.','Vuelvo **del** trabajo. | Torno dal lavoro.','He soñado **con** Harrison Ford. | Ho sognato Harrison Ford.'],
+    disc:{q:'«Penso a te» è «pienso **en** ti». Cosa ci dice?', o:['Certi verbi vogliono una preposizione diversa dall’italiano','En e a sono sinonimi','In spagnolo non si usa «a»'], why:'La preposizione va imparata insieme al verbo.'},
+    rule:'Certi verbi hanno la loro preposizione. EN: estar en, entrar en, quedarse en, pensar en. A: ir a, venir a, volver a, llegar a. DE: venir de, volver de. POR: pasar por, pasear por. CON: soñar con.',
+    table:['preposizione | verbi','en | estar, entrar, quedarse, pensar','a | ir, venir, volver, llegar','de | venir, volver (da un luogo)','por | pasar, pasear','con | soñar'],
+    vs:['Arrivo a Londra. | Llego a Londres. | Mai «llego en».','Sogno Harrison Ford. | Sueño con Harrison Ford. | In spagnolo si sogna «con».','Entro in casa. | Entro en casa. | Entrar en.'],
+    traps:['Estoy en Roma ma voy a Roma: dove sei → en, dove vai → a.'],
+    cap:[{q:'Quale frase dice che **stai andando** a Madrid?', o:['Vuelvo a Madrid.','Vuelvo de Madrid.'], why:'Volver a: verso il luogo. Volver de: dal luogo.'}]},
+  {id:'frequenza', g:'nexos', art:'siempre', t:'Frequenza e giorni', sub:'siempre, a menudo, los lunes',
+    rules:['L7|La frequenza','L7|I giorni della settimana'],
+    obs:['Voy al cine **por** la tarde. | Vado al cinema il pomeriggio.','**Casi nunca** voy a la montaña. | Non vado quasi mai in montagna.','Voy al cine **los** miércoles. | Vado al cinema il mercoledì.','Nado **a menudo**. | Nuoto spesso.'],
+    disc:{q:'«Voy al cine **los** miércoles» vuol dire…', o:['ogni mercoledì','mercoledì prossimo','un mercoledì qualsiasi'], why:'Los + giorno = un’abitudine.'},
+    rule:'Dalla più alla meno frequente: siempre, casi siempre, a menudo, normalmente, alguna vez, rara vez, casi nunca, nunca. Le parti del giorno vogliono POR: por la mañana, por la tarde, por la noche. I giorni sono maschili e minuscoli: el lunes (lunedì), los lunes (ogni lunedì).',
+    table:['frequenza | italiano','siempre | sempre','casi siempre | quasi sempre','a menudo | spesso','alguna vez | qualche volta','rara vez | raramente','casi nunca | quasi mai','nunca | mai'],
+    vs:['La mattina faccio ginnastica. | Por la mañana hago gimnasia. | La parte del giorno vuole por.','Il mercoledì vado al cinema. | Los miércoles voy al cine. | Abitudine: los + giorno.'],
+    traps:['Mañana (domani) e la mañana (la mattina) sono la stessa parola.'],
+    cap:[{q:'«**Rara vez** voy al teatro» significa…', o:['Vado raramente a teatro.','Vado spesso a teatro.'], why:'Rara vez = raramente.'}]},
+];
+for (const g of GRAMMAR) g.ruleIds = g.rules.map(r => { const [lid, title] = r.split('|'); return Object.values(RULES).find(x => x.lessonId === lid && x.title === title)?.id; }).filter(Boolean);
+const GRAM_BY_RULE = {}; GRAMMAR.forEach(g => g.ruleIds.forEach(r => GRAM_BY_RULE[r] = g));
+const gramById = id => GRAMMAR.find(g => g.id === id);
+const gramItems = g => items().filter(i => g.ruleIds.includes(i.ruleId) || (g.gens || []).includes(i.gen) || (g.verbs && i.kind === 'verb' && g.verbs(i)));
+const gramDone = id => profile().gram?.[id];
+const hl = s => esc(s).replace(/\*\*(.+?)\*\*/g, '<mark>$1</mark>');
+const plainHl = s => String(s).replace(/\*\*/g, '');
+function gramTable(rows){
+  const [head, ...body] = rows.map(r => r.split('|').map(c => c.trim()));
+  return `<div class="tbl-wrap"><table class="gtable"><thead><tr>${head.map(c => `<th>${esc(c)}</th>`).join('')}</tr></thead><tbody>${body.map(r => `<tr>${r.map((c, i) => i ? `<td>${esc(c)}</td>` : `<th scope="row">${esc(c)}</th>`).join('')}</tr>`).join('')}</tbody></table></div>`;
+}
+function gramRuleHtml(g){
+  return `<div class="rule-hero"><p>${esc(g.rule)}</p></div>
+    ${gramTable(g.table)}
+    <div class="vs"><div class="vs-h"><span>In italiano</span><span>In spagnolo</span></div>
+      ${g.vs.map(v => { const [it, es, n] = v.split(' | '); return `<div class="vs-row"><span class="vs-it">${esc(it)}</span><button class="vs-es" data-action="say" data-text="${esc(es.split(' / ')[0])}">${esc(es)}</button>${n ? `<span class="vs-n">${esc(n)}</span>` : ''}</div>`; }).join('')}</div>
+    <div class="traps"><b>Occhio</b><ul>${g.traps.map(t => `<li>${esc(t)}</li>`).join('')}</ul></div>`;
+}
+function obsHtml(g){
+  return `<div class="obs">${g.obs.map(o => { const [es, it] = o.split(' | '); return `<button class="obs-row" data-action="say" data-text="${esc(plainHl(es))}"><span class="obs-es">${hl(es)}</span><span class="obs-it">${esc(it)}</span><span class="obs-ic">${ICON.sound}</span></button>`; }).join('')}</div>`;
+}
+function topicRow(g){
+  const li = gramItems(g), c = counts(li), n = li.length || 1, d = gramDone(g.id);
+  const pct = Math.round((c.solid + c.learn * .5) / n * 100);
+  const pill = !d ? '<span class="pill due">Da scoprire</span>' : c.weak ? `<span class="pill weak">${c.weak} ${c.weak === 1 ? 'debole' : 'deboli'}</span>` : `<span class="pill ok">${pct}%</span>`;
+  return `<button class="topic ${d ? 'done' : ''}" data-action="gram-open" data-id="${g.id}"><span class="t-art">${esc(g.art)}</span><span class="t-txt"><b>${esc(g.t)}</b><span>${esc(g.sub)}</span></span>${pill}</button>`;
+}
+function renderGrammar(){
+  const done = GRAMMAR.filter(g => gramDone(g.id)).length;
+  return `<div class="page-head"><div class="eyebrow">Teoria</div><h1>Grammatica</h1><p>Le regole del tutor, una alla volta. Prima osservi, poi scopri la regola da solo, poi la metti alla prova.</p></div>
+    <div class="method" aria-label="Il metodo">${['Osserva','Scopri','Regola','Capisci','Pratica'].map((s, i) => `<span><b>${i + 1}</b>${s}</span>`).join('')}</div>
+    <div class="gram-count"><div class="mastery sm"><span style="width:${done / GRAMMAR.length * 100}%;background:var(--ok)"></span></div><span class="eyebrow num">${done} di ${GRAMMAR.length} argomenti scoperti</span></div>
+    ${GRAM_GROUPS.map(([k, t]) => `<div class="section-title"><h3>${t}</h3></div><div class="topics">${GRAMMAR.filter(g => g.g === k).map(topicRow).join('')}</div>`).join('')}
+    ${modeNote()}`;
+}
+function gramSheet(id){
+  const g = gramById(id); if (!g) return;
+  const li = gramItems(g), c = counts(li), n = li.length || 1;
+  openSheet(`<div class="sheet" role="dialog" aria-modal="true" aria-label="${esc(g.t)}">
+    <div class="sheet-head"><div><div class="eyebrow">${esc(GRAM_GROUPS.find(x => x[0] === g.g)[1])}</div><h2>${esc(g.t)}</h2></div><button class="icon-btn" data-action="close" aria-label="Chiudi">${ICON.close}</button></div>
+    <div class="sheet-body gram-body" id="sheet-body">
+      <div class="mastery sm">${['solid','learn','weak','new'].map(x => `<span style="width:${c[x] / n * 100}%;background:${LEVEL_COLOR[x]}"></span>`).join('')}</div>
+      <div class="legend">${['solid','learn','weak','new'].map(k => `<span><i class="c-${k}"></i>${LEVEL_LABEL[k]} <b class="num">${c[k]}</b></span>`).join('')}</div>
+      ${gramRuleHtml(g)}
+      <div class="section-title" style="margin:6px 0 0"><h3>Esempi</h3><span class="eyebrow">tocca per ascoltare</span></div>
+      ${obsHtml(g)}
+    </div>
+    <div class="sheet-foot"><button class="btn ghost" data-action="gram-study" data-id="${g.id}">Teoria guidata</button><span class="grow"></span><button class="btn" data-action="start" data-scope="topic" data-arg="${g.id}">Esercitati · ${li.length}</button></div>
+  </div>`);
+}
+
+function startGram(id){
+  const g = gramById(id); if (!g) return;
+  Tk = {kind:'gram', g, i:0, steps:['obs','disc','rule', ...g.cap.map((_, k) => 'cap' + k), 'end'], xp:0, state:'ask', sel:null, saved:false};
+  openTalk(g.t, `<div class="progress"><span id="prog"></span></div><div class="s-xp num" id="sxp">0 XP</div>`);
+  showGram();
+}
+const PHASE = {obs:[1,'Osserva'], disc:[2,'Scopri la regola'], rule:[3,'La regola'], cap:[4,'Capisci il senso'], end:[5,'Ora tocca a te']};
+function showGram(){
+  const T = Tk, g = T.g, st = T.steps[T.i], ph = PHASE[st.startsWith('cap') ? 'cap' : st];
+  $('#prog').style.width = Math.round(T.i / (T.steps.length - 1) * 100) + '%'; $('#sxp').textContent = T.xp + ' XP';
+  T.state = 'ask'; T.sel = null;
+  let body = '', foot = '';
+  if (st === 'obs') {
+    body = `<p class="lead">Leggi e ascolta. Fai caso alle parti evidenziate: cosa cambia, cosa resta uguale?</p>${obsHtml(g)}`;
+    foot = `<button class="btn wide" id="cont" data-action="gram-next">Ho osservato</button>`;
+  } else if (st === 'disc' || st.startsWith('cap')) {
+    const q = T.q = st === 'disc' ? g.disc : g.cap[+st.slice(3)];
+    T.opts = shuffle(q.o);
+    body = `${st === 'disc' ? '<p class="lead">Prova a dedurre la regola dagli esempi. Se sbagli va bene: è così che si impara.</p>' : '<p class="lead">Ora conta il significato: cosa vuol dire davvero?</p>'}
+      <div class="cloze q">${hl(q.q)}</div>${optsHtml(T.opts)}${st === 'disc' ? `<details class="peek"><summary>Rivedi gli esempi</summary>${obsHtml(g)}</details>` : ''}`;
+    foot = `<button class="btn wide" id="check" data-action="gram-check" disabled>Controlla</button>`;
+  } else if (st === 'rule') {
+    body = gramRuleHtml(g);
+    foot = `<button class="btn wide" id="cont" data-action="gram-next">Ho capito</button>`;
+  } else {
+    if (!T.saved) { T.saved = true; T.xp += 10; addXP(T.xp); saveProfile({gram:{...(profile().gram || {}), [g.id]:Date.now()}}); tone('done'); }
+    const n = gramItems(g).length;
+    body = `<div class="done-screen"><div class="seal" aria-hidden="true">${esc(g.art)}</div><div class="big">¡Regla descubierta!</div>
+      <p class="lead" style="text-align:center">Adesso fissala con gli esercizi del tutor su questo argomento (${n}). Poi torneranno nel ripasso quando starai per dimenticarli.</p></div>`;
+    foot = `<div style="display:flex;gap:10px"><button class="btn ghost" data-action="talk-quit">Più tardi</button><button class="btn" style="flex:1" id="cont" data-action="gram-practice" data-id="${g.id}">Esercitati ora</button></div>`;
+  }
+  $('#sbody').innerHTML = `<div class="s-inner"><div class="s-kicker"><span class="k"><span class="step-n">${ph[0]}</span>${ph[1]}</span><span class="pill">${esc(g.t)}</span></div>${body}</div>`;
+  $('#sbody').scrollTop = 0;
+  const f = $('#sfoot'); f.className = 's-foot'; f.innerHTML = `<div class="s-foot-in">${foot}</div>`;
+}
+function gramSelect(i){
+  const T = Tk; if (T.state !== 'ask') return;
+  const btns = document.querySelectorAll('.opt[data-opt]'); if (!btns[i]) return;
+  T.sel = i; btns.forEach((b, j) => b.setAttribute('aria-pressed', j === i)); haptic('tap');
+  $('#check').disabled = false;
+}
+function gramCheck(){
+  const T = Tk; if (T.state !== 'ask' || T.sel == null) return;
+  const right = T.opts[T.sel] === T.q.o[0], disc = T.steps[T.i] === 'disc';
+  document.querySelectorAll('.opt[data-opt]').forEach((b, i) => { if (T.opts[i] === T.q.o[0]) b.classList.add('right'); else if (i === T.sel) b.classList.add('wrong'); });
+  T.xp += right ? 5 : 1; $('#sxp').textContent = T.xp + ' XP';
+  const r = right ? 'ok' : disc ? 'warn' : 'bad';
+  const f = $('#sfoot'); f.className = 's-foot ' + r;
+  f.innerHTML = `<div class="s-foot-in"><div class="fb"><span class="badge">${right ? ICON.check : disc ? ICON.warn : ICON.x}</span><div style="min-width:0;flex:1">
+    <div class="h">${right ? pickOne(disc ? ['¡Lo has descubierto!','¡Exacto!'] : ['¡Exacto!','¡Eso es!']) : disc ? 'Quasi: guarda di nuovo' : 'Non proprio'}</div>
+    ${right ? '' : `<div class="d">La risposta: <b>${esc(T.q.o[0])}</b></div>`}<div class="why">${esc(T.q.why)}</div></div></div>
+    <button class="btn wide ${right ? 'ok' : disc ? '' : 'bad'}" id="cont" data-action="gram-next">Continua</button></div>`;
+  tone(right ? 'ok' : 'bad');
+  T.state = 'shown';
 }
 
 /* ---------------- event wiring ---------------- */
@@ -3558,6 +4030,13 @@ document.addEventListener('click', e => {
     case 'c-usehint': { const ta = $('#c-in'); if (ta) { ta.value = t.dataset.text; ta.dispatchEvent(new Event('input')); ta.focus(); } speak(t.dataset.text); return; }
     case 'c-tr': { const m = Tk.msgs[+t.dataset.i]; if (m) m.showIt = !m.showIt; const y = $('#sbody').scrollTop; renderConv(); $('#sbody').scrollTop = y; return; }
     case 'c-end': return finishConv();
+    case 'gram-open': { const id = t.dataset.id; closeSheet(); return gramDone(id) ? gramSheet(id) : startGram(id); }
+    case 'gram-study': closeSheet(); return startGram(t.dataset.id);
+    case 'gram-next': haptic('tap'); Tk.i++; return showGram();
+    case 'gram-check': return gramCheck();
+    case 'gram-practice': { const id = t.dataset.id; quitTalk(); return startSession('topic', id); }
+    case 'voice': saveProfile({voice:t.dataset.uri}); pickVoice(); speak('¡Hola! ¿Qué tal? Vamos a repasar un poco de español.'); return settingsSheet();
+    case 'voice-try': { const keep = esVoice; esVoice = esVoices.find(v => v.voiceURI === t.dataset.uri) || keep; speak('¡Hola! ¿Qué tal? Vamos a repasar un poco de español.'); esVoice = keep; return; }
   }
 });
 function commitEdits(){
@@ -3571,6 +4050,11 @@ document.addEventListener('input', e => { if (e.target.id === 'book-q') { bookQu
 document.addEventListener('keydown', e => {
   if (Tk) {
     if (e.key === 'Escape') return quitTalk();
+    if (Tk.kind === 'gram') {
+      if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); const c = $('#check'); if (c && !c.disabled && Tk.state === 'ask') return gramCheck(); return $('#cont')?.click(); }
+      if (/^[1-4]$/.test(e.key)) gramSelect(+e.key - 1);
+      return;
+    }
     if (Tk.kind === 'conv') { if (e.key === 'Enter' && !e.shiftKey && e.target.id === 'c-in') { e.preventDefault(); convSend(); } return; }
     if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); if (Tk.state !== 'ask') return $('#cont')?.click(); const c = $('#say-check'); if (c && !c.disabled) c.click(); return; }
     if (e.key === ' ' && e.target.tagName !== 'TEXTAREA' && e.target.tagName !== 'BUTTON' && Tk.state === 'ask' && canListen()) { e.preventDefault(); sayMic(); }
@@ -3593,6 +4077,7 @@ document.addEventListener('keydown', e => {
 paintNav(); render();
 (async () => {
   await Store.init();
+  pickVoice();
   try { sampleFn = window.claude?.use ? await claude.use('sample') : null; } catch { sampleFn = null; }
   paintNav(); render();
   if ($('#layer .sheet') && imp.step === 'pick') importSheet();

@@ -6,10 +6,10 @@ Tutta l'app è un solo file: [`index.html`](index.html).
 
 ## Cosa fa
 
-- **Oggi**: il ripasso del giorno. Ogni carta torna quando stai per dimenticarla (algoritmo FSRS).
+- **Oggi**: il ripasso del giorno, più un suggerimento dal percorso, dalla grammatica e dalle conversazioni. Ogni carta torna quando stai per dimenticarla (algoritmo FSRS).
 - **Percorso**: le lezioni L1–L8, L11, L13 e le tre schede di grammatica, nell'ordine del tutor. Circa 1100 carte tra parole, verbi coniugati e frasi.
-- **Allenati**: sessioni mirate su coniugazioni, grammatica, traduzioni, ore, dettato, numeri, ubicadores e possessivi.
-- **Parla**: pronuncia con il microfono, esercizi sui suoni difficili per un italiano e conversazioni con Claude, limitate al vocabolario delle lezioni.
+- **Grammatica**: 20 argomenti costruiti sulle regole del tutor, ognuno in cinque passi: osserva, scopri la regola, la regola (con tabella, confronto con l'italiano e trappole), capisci, pratica.
+- **Pratica**: coniugazioni, traduzioni, ascolto e dettato, numeri e ore; pronuncia con il microfono e i suoni difficili per un italiano; conversazioni con Claude limitate al vocabolario delle lezioni.
 - **Quaderno**: tutto il materiale in un posto solo, con ricerca e la lista dei tuoi errori.
 - **Nuova lezione**: importa PDF, Word o foto delle lezioni; Claude ne ricava vocaboli, verbi ed esercizi da confermare.
 
