@@ -2194,46 +2194,93 @@ function genEx(it, reps){
   return {type:'reveal', item:it};
 }
 
-/* ---------------- storage: cloud (db) with local fallback ---------------- */
+/* ---------------- storage: account (db) + a copy on the device ----------------
+   Everything lives in the viewer's private subtree: data/users/<id>/repaso/{prog,lessons,items,meta}/<doc>.
+   Every change is written to the device at once and to the account right after, so closing the app
+   mid-save loses nothing: on the next start the two copies are merged, newest card wins, and whatever
+   the account is missing is uploaded again. */
+const LOCAL_KEY = 'repaso:v3';
+const newer = (a, b) => (a?.last || 0) >= (b?.last || 0) ? a : b;
 const Store = {
-  mode:'local', db:null, uid:null, data:{prog:{}, lessons:{}, items:{}, meta:{}},
-  dirty:new Set(), chain:Promise.resolve(), timer:null,
+  mode:'local', db:null, uid:null, root:null, data:{prog:{}, lessons:{}, items:{}, meta:{}},
+  dirty:new Set(), chain:Promise.resolve(), timer:null, pending:0, lastError:'',
   async init(){
+    try {
+      const raw = localStorage.getItem(LOCAL_KEY) || localStorage.getItem('repaso:v1');
+      if (raw) { const d = JSON.parse(raw); this.data = {prog:d.prog || {}, lessons:d.lessons || {}, items:d.items || {}, meta:d.meta || {}}; }
+    } catch {}
     try {
       if (window.claude?.use) {
         const [db, user] = await Promise.all([claude.use('db'), claude.use('user')]);
-        if (db && user) { this.uid = await user.id(); this.db = db; this.mode = 'cloud'; }
+        const id = db && user ? await user.id() : null;
+        if (db && id) { this.db = db; this.uid = id; this.root = db.doc('data/users/' + id + '/repaso'); this.mode = 'cloud'; }
       }
     } catch {}
-    if (this.mode === 'cloud') {
-      try {
-        for (const name of ['prog','lessons','items','meta']) {
-          const snap = await this.col(name).limit(1000).get();
-          for (const d of snap.docs) this.data[name][d.id] = structuredClone(d.data());
-        }
-        return;
-      } catch { this.mode = 'local'; }
-    }
+    if (this.mode !== 'cloud') return;
     try {
-      const raw = localStorage.getItem('repaso:v3') || localStorage.getItem('repaso:v1');
-      if (raw) { const d = JSON.parse(raw); this.data = {prog:d.prog || {}, lessons:d.lessons || {}, items:d.items || {}, meta:d.meta || {}}; }
-    } catch {}
+      const cloud = {prog:{}, lessons:{}, items:{}, meta:{}};
+      for (const name of Object.keys(cloud)) {
+        const snap = await this.col(name).limit(1000).get();
+        for (const d of snap.docs) cloud[name][d.id] = structuredClone(d.data());
+      }
+      const upload = this.merge(cloud);
+      this.saveLocal();
+      for (const [name, id] of upload) this.write(name, id);
+    } catch (e) {
+      this.mode = 'local'; this.db = null; this.root = null;
+      this.lastError = e?.message || e?.code || 'archivio non raggiungibile';
+    }
   },
-  col(name){ return this.db.collection('data/users/' + this.uid + '/' + name); },
-  saveLocal(){ try { localStorage.setItem('repaso:v3', JSON.stringify(this.data)); } catch {} },
-  put(name, id, body){
-    this.data[name][id] = body;
-    if (this.mode !== 'cloud') return this.saveLocal();
-    this.chain = this.chain.then(() => this.col(name).doc(id).set(body)).catch(e => toast('Non riesco a salvare online: ' + (e?.message || e?.code || 'errore')));
+  // merges the account copy into the device copy; returns the documents the account is missing or has older
+  merge(cloud){
+    const local = this.data, up = [];
+    const out = {prog:{}, lessons:{...local.lessons, ...cloud.lessons}, items:{}, meta:{...local.meta, ...cloud.meta}};
+    for (const id of new Set([...Object.keys(local.prog), ...Object.keys(cloud.prog)])) {
+      const a = local.prog[id] || {}, b = cloud.prog[id] || {}, m = {};
+      let changed = !cloud.prog[id];
+      for (const k of new Set([...Object.keys(a), ...Object.keys(b)])) { m[k] = b[k] && a[k] ? newer(a[k], b[k]) : a[k] || b[k]; if (m[k] !== b[k]) changed = true; }
+      out.prog[id] = m; if (changed) up.push(['prog', id]);
+    }
+    for (const id of new Set([...Object.keys(local.items), ...Object.keys(cloud.items)])) {
+      const a = local.items[id], b = cloud.items[id];
+      out.items[id] = a && b ? ((a.srs?.last || 0) > (b.srs?.last || 0) ? a : b) : a || b;
+      if (out.items[id] !== b) up.push(['items', id]);
+    }
+    for (const id of Object.keys(local.lessons)) if (!cloud.lessons[id]) up.push(['lessons', id]);
+    const lp = local.meta.profile, cp = cloud.meta.profile;
+    if (lp || cp) {
+      const maxBy = (x = {}, y = {}) => { const r = {...x}; for (const k in y) r[k] = Math.max(r[k] || 0, y[k] || 0); return r; };
+      const p = {...(lp || {}), ...(cp || {}), xpByDay:maxBy(lp?.xpByDay, cp?.xpByDay), newByDay:maxBy(lp?.newByDay, cp?.newByDay), gram:{...(lp?.gram || {}), ...(cp?.gram || {})}};
+      out.meta.profile = p;
+      if (JSON.stringify(p) !== JSON.stringify(cp || null)) up.push(['meta', 'profile']);
+    }
+    this.data = out;
+    return up;
+  },
+  col(name){ return this.root.collection(name); },
+  saveLocal(){ try { localStorage.setItem(LOCAL_KEY, JSON.stringify(this.data)); } catch {} },
+  write(name, id){
+    if (this.mode !== 'cloud') return Promise.resolve();
+    this.pending++;
+    const run = async () => {
+      const body = this.data[name][id], ref = this.col(name).doc(id);
+      const go = () => body === undefined ? ref.delete() : ref.set(structuredClone(body));
+      try { await go(); }
+      catch (e) {
+        if (e?.code !== 'unavailable' && e?.code !== 'resource_exhausted') throw e;
+        await new Promise(r => setTimeout(r, 600 + Math.random() * 900));
+        await go();
+      }
+    };
+    this.chain = this.chain.then(run).then(() => { this.lastError = ''; }, e => {
+      this.lastError = e?.message || e?.code || 'errore';
+      toast('Non riesco a salvare nel tuo account: i progressi restano su questo dispositivo e riprovo alla prossima apertura.');
+    }).finally(() => { this.pending--; });
     return this.chain;
   },
-  del(name, id){
-    delete this.data[name][id];
-    if (this.mode !== 'cloud') return this.saveLocal();
-    this.chain = this.chain.then(() => this.col(name).doc(id).delete()).catch(() => {});
-    return this.chain;
-  },
-  flush(){ clearTimeout(this.timer); for (const lid of this.dirty) this.put('prog', lid, this.data.prog[lid]); this.dirty.clear(); },
+  put(name, id, body){ this.data[name][id] = body; this.saveLocal(); return this.write(name, id); },
+  del(name, id){ delete this.data[name][id]; this.saveLocal(); return this.write(name, id); },
+  flush(){ clearTimeout(this.timer); this.saveLocal(); for (const lid of this.dirty) this.write('prog', lid); this.dirty.clear(); },
 };
 function P(it){
   if (it.builtin) return Store.data.prog[it.lessonId]?.[it.id] || null;
@@ -2243,7 +2290,7 @@ function P(it){
 function setP(it, p){
   if (it.builtin) {
     (Store.data.prog[it.lessonId] ||= {})[it.id] = p;
-    Store.dirty.add(it.lessonId); clearTimeout(Store.timer); Store.timer = setTimeout(() => Store.flush(), 900);
+    Store.dirty.add(it.lessonId); Store.saveLocal(); clearTimeout(Store.timer); Store.timer = setTimeout(() => Store.flush(), 500);
   } else {
     const cur = Store.data.items[it.id]; if (!cur) return;
     const {m, w, ...srs} = p;
@@ -2448,7 +2495,7 @@ function renderToday(){
     </div>
     ${modeNote()}`;
 }
-const modeNote = () => `<p class="mode-note">${Store.mode === 'cloud' ? 'I progressi sono salvati nel tuo account e si sincronizzano tra iPhone e Mac.' : 'I progressi restano su questo dispositivo. Aprendo Repaso da claude.ai con il tuo account si sincronizzano.'}</p>`;
+const modeNote = () => `<p class="mode-note">${Store.mode === 'cloud' ? 'I progressi sono salvati nel tuo account e si sincronizzano tra iPhone e Mac.' : Store.lastError ? 'Non riesco a raggiungere il tuo account: per ora i progressi restano su questo dispositivo, e alla prossima apertura li carico.' : 'I progressi restano su questo dispositivo. Aprendo Repaso da claude.ai con il tuo account si sincronizzano.'}</p>`;
 
 /* ----- training modes ----- */
 const TRAIN = {
