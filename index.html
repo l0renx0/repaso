@@ -629,6 +629,77 @@ mark{background:linear-gradient(transparent 52%, color-mix(in srgb, var(--saffro
 .radio{width:20px; height:20px; border-radius:50%; border:2.5px solid var(--line-deep); flex-shrink:0; transition:border .15s}
 .voice-row.on .radio{border:6px solid var(--cobalt)}
 
+/* ---------- v6: the exercise screen ----------
+   One question card per exercise, a stage label and memory dots above it, answers below,
+   feedback that shows exactly what went wrong and when the card comes back. */
+.session{background:linear-gradient(180deg, var(--surface) 0, var(--bg) 220px)}
+.s-top{gap:12px}
+.s-count{font-family:var(--f-display); font-weight:800; color:var(--muted); font-size:.92rem; min-width:46px; text-align:right}
+.progress{height:12px; background:var(--sunk)}
+.progress span{background:linear-gradient(90deg, var(--ok), color-mix(in srgb, var(--ok) 70%, var(--saffron)))}
+.s-body{padding-top:10px}
+.s-inner{gap:16px}
+.s-meta{display:flex; align-items:center; gap:8px; flex-wrap:wrap; min-height:26px}
+.stage-chip{display:inline-flex; align-items:center; padding:4px 10px; border-radius:99px; font-size:.74rem; font-weight:800; letter-spacing:.06em; text-transform:uppercase; background:var(--cobalt-soft); color:var(--cobalt)}
+.stage-chip.st-1{background:var(--saffron); color:#2a1d00}
+.stage-chip.st2{background:var(--saffron-soft); color:var(--saffron-deep)}
+.stage-chip.st3{background:var(--ok-soft); color:var(--ok)}
+.stage-chip.again{background:var(--bad-soft); color:var(--bad)}
+:root[data-theme="dark"] .stage-chip.st2{color:var(--saffron)}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]) .stage-chip.st2{color:var(--saffron)}}
+.dots{display:inline-flex; gap:3px; align-items:center}
+.dots i{width:7px; height:7px; border-radius:50%; background:var(--line-deep)}
+.dots i.on{background:var(--ok)}
+.s-src{margin-left:auto; font-size:.76rem; font-weight:700; color:var(--muted); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:52%}
+.s-q{font-family:var(--f-display); font-weight:800; font-size:clamp(1.25rem, 4.6vw, 1.5rem); letter-spacing:-.02em; line-height:1.2; margin:-2px 0 2px}
+/* the question card */
+.s-inner > .prompt, .s-inner > .cloze, .s-inner > .listen-row, .s-inner > .wrongsent, .s-inner > .bignum, .s-inner > .clock-wrap, .s-inner > .scene-wrap, .qcard{
+  background:var(--surface); border:2px solid var(--line); border-radius:var(--r-lg); padding:22px 20px; box-shadow:0 4px 0 var(--line)}
+.s-inner > .prompt{min-height:120px; justify-content:center}
+.s-inner > .prompt .say{text-align:center}
+.s-inner > .prompt:has(.speak) .say{text-align:left}
+.s-inner > .cloze + .cloze-it{margin-top:-6px; padding:0 4px}
+.s-inner > .listen-row{padding:26px 20px}
+.s-inner > .wrongsent{text-align:center}
+.qcard{display:flex; flex-direction:column; gap:8px}
+.qcard .cloze{font-size:clamp(1.3rem, 4.6vw, 1.7rem)}
+.hintline{display:inline-flex; align-self:flex-start; gap:6px; padding:5px 10px; border-radius:10px; background:var(--sunk); font-weight:600; color:var(--muted); font-size:.9rem}
+.hintline b{color:var(--ink)}
+.cloze .gap{border-bottom-width:3px; border-radius:2px; min-width:72px; transition:color .15s}
+.opts{gap:10px}
+.opt{border-radius:var(--r-md); min-height:58px; box-shadow:0 4px 0 var(--line); border-width:2px}
+.opt:hover{border-color:var(--line-deep)}
+.opt.right .kbd{border-color:var(--ok); color:var(--ok)}
+.opt.right{animation:right-pop .35s cubic-bezier(.2,.9,.25,1.5)}
+@keyframes right-pop{40%{transform:scale(1.025)}}
+.answer-box{border-radius:var(--r-lg); box-shadow:0 4px 0 var(--line)}
+.answer-box textarea{font-size:1.25rem; min-height:76px}
+.ask-row{display:grid; grid-template-columns:auto 1fr; gap:10px}
+.ask-row .btn.ghost{padding:0 16px; font-size:.92rem}
+/* leech card */
+.flash.leech{background:var(--saffron-soft); border-color:transparent; box-shadow:0 5px 0 color-mix(in srgb, var(--saffron) 35%, transparent)}
+.flash .prompt-row{display:flex; align-items:center; gap:14px}
+.flash .tip{font-weight:700; font-size:.95rem; padding-top:10px; border-top:1px dashed color-mix(in srgb, var(--saffron-deep) 40%, transparent)}
+/* feedback */
+.diff{display:grid; gap:4px; margin-top:6px; padding:10px 12px; border-radius:12px; background:color-mix(in srgb, var(--surface) 70%, transparent)}
+.diff div{display:grid; grid-template-columns:96px minmax(0,1fr); gap:8px; align-items:baseline}
+.diff span{font-size:.74rem; font-weight:800; letter-spacing:.05em; text-transform:uppercase; color:var(--muted)}
+.diff b{font-size:1.08rem; font-weight:700; overflow-wrap:anywhere; letter-spacing:.01em}
+.diff del{color:var(--bad); text-decoration:line-through; text-decoration-thickness:2px; background:color-mix(in srgb, var(--bad) 14%, transparent); border-radius:3px}
+.diff ins{color:var(--ok); text-decoration:none; background:color-mix(in srgb, var(--ok) 18%, transparent); border-radius:3px; padding:0 1px}
+.next-chip{display:inline-flex; align-items:center; gap:6px; margin-top:8px; padding:4px 10px 4px 8px; border-radius:99px; background:color-mix(in srgb, var(--surface) 75%, transparent); font-size:.8rem; font-weight:700; color:var(--muted)}
+.next-chip svg{width:15px; height:15px}
+.s-foot{box-shadow:0 -8px 24px -18px rgba(19,25,54,.25)}
+.s-foot.ok,.s-foot.bad,.s-foot.warn{animation:foot-in .28s cubic-bezier(.2,.9,.25,1)}
+@keyframes foot-in{from{transform:translateY(16px)}}
+/* end of session */
+.buckets{display:flex; flex-direction:column; gap:8px; background:var(--surface); border:1px solid var(--line); border-radius:var(--r-lg); padding:14px 16px}
+.bk{display:grid; grid-template-columns:120px 1fr 28px; gap:10px; align-items:center; font-weight:700; font-size:.9rem}
+.bk span{color:var(--muted)}
+.bk b{text-align:right}
+.bk-bar{height:10px; border-radius:99px; background:var(--sunk); overflow:hidden}
+.bk-bar i{display:block; height:100%; border-radius:99px; background:var(--cobalt)}
+
 @media (prefers-reduced-motion: reduce){
   *,*::before,*::after{animation-duration:.01ms!important; animation-iteration-count:1!important; transition-duration:.01ms!important}
 }
@@ -2319,21 +2390,48 @@ const goalXP = () => profile().goal || 50;
 const newPerDay = () => profile().newPerDay || 20;
 function saveProfile(patch){ Store.put('meta', 'profile', {...profile(), ...patch}); }
 
-/* ---------------- FSRS-4.5 scheduler ---------------- */
-const W = [0.4872,1.4003,3.7145,13.8206,5.1618,1.2298,0.8975,0.031,1.6474,0.1367,1.0461,2.1072,0.0793,0.3246,1.587,0.2272,2.8755];
+/* ---------------- FSRS-5 scheduler ----------------
+   Memory model per card: stability S (days until recall falls to the target), difficulty D (1–10) and
+   retrievability R. Grades: 1 again · 2 hard · 3 good · 4 easy. Reviews on the same day use FSRS-5's
+   short-term formula; intervals get a small fuzz so cards learnt together don't stay clumped. */
+const W = [0.40255,1.18385,3.173,15.69105,7.1949,0.5345,1.4604,0.0046,1.54575,0.1192,1.01925,1.9395,0.11,0.29605,2.2698,0.2315,2.9898,0.51655,0.6621];
 const DECAY = -0.5, FACTOR = 19/81;
-const d0 = g => clamp(W[4] - (g-3)*W[5], 1, 10);
+const retention = () => profile().retain || 0.9;
+const d0 = g => clamp(W[4] - Math.exp(W[5]*(g-1)) + 1, 1, 10);
+const retr = (p, now=Date.now()) => p?.reps ? Math.pow(1 + FACTOR*Math.max(0, (now - p.last)/DAY)/Math.max(.05, p.s), DECAY) : 0;
+const intervalDays = st => st / FACTOR * (Math.pow(retention(), 1/DECAY) - 1);
 function schedule(p, g, now=Date.now()){
-  let s, d;
-  if (!p || !p.reps) { s = W[g-1]; d = d0(g); }
+  let st, d;
+  if (!p || !p.reps) { st = W[g-1]; d = d0(g); }
   else {
-    const t = Math.max(0, (now - p.last)/DAY), r = Math.pow(1 + FACTOR*t/p.s, DECAY);
-    if (g === 1) s = W[11]*Math.pow(p.d,-W[12])*(Math.pow(p.s+1,W[13])-1)*Math.exp(W[14]*(1-r));
-    else s = p.s*(Math.exp(W[8])*(11-p.d)*Math.pow(p.s,-W[9])*(Math.exp(W[10]*(1-r))-1)*(g===2?W[15]:1)*(g===4?W[16]:1)+1);
-    d = clamp(W[7]*d0(3) + (1-W[7])*(p.d - W[6]*(g-3)), 1, 10);
+    const t = Math.max(0, (now - p.last)/DAY), r = retr(p, now);
+    if (t < 1) st = p.s * Math.exp(W[17]*(g - 3 + W[18]));
+    else if (g === 1) st = Math.min(p.s, W[11]*Math.pow(p.d, -W[12])*(Math.pow(p.s + 1, W[13]) - 1)*Math.exp(W[14]*(1 - r)));
+    else st = p.s*(Math.exp(W[8])*(11 - p.d)*Math.pow(p.s, -W[9])*(Math.exp(W[10]*(1 - r)) - 1)*(g === 2 ? W[15] : 1)*(g === 4 ? W[16] : 1) + 1);
+    const dd = p.d - W[6]*(g - 3);
+    d = clamp(W[7]*d0(4) + (1 - W[7])*(p.d + (dd - p.d)*(10 - p.d)/9), 1, 10);
   }
-  const ivl = g === 1 ? 10*60e3 : Math.max(1, Math.round(s))*DAY;
-  return {s:+s.toFixed(3), d:+d.toFixed(3), due:now+ivl, last:now, reps:(p?.reps||0)+1, lapses:(p?.lapses||0)+(g===1 && p?.reps ? 1 : 0), m:Math.max(0, (p?.m||0) + (g === 1 ? 1 : g >= 3 && p?.m ? -1 : 0)), w:p?.w || []};
+  st = clamp(st, .05, 36500);
+  let days = intervalDays(st);
+  if (days >= 3) days *= .95 + Math.random()*.1;
+  const ivl = g === 1 ? 10*60e3 : clamp(Math.round(days), 1, 365)*DAY;   // a language you use rarely: never more than a year away
+  return {s:+st.toFixed(3), d:+d.toFixed(3), due:now + ivl, last:now, reps:(p?.reps||0) + 1, lapses:(p?.lapses||0) + (g === 1 && p?.reps ? 1 : 0), m:Math.max(0, (p?.m||0) + (g === 1 ? 1 : g >= 3 && p?.m ? -1 : 0)), w:p?.w || [], g};
+}
+// where a card stands: 0 recognise the Spanish · 1 recognise it from Italian · 2 recall it · 3 use it in a sentence
+function stage(it){
+  const p = P(it); if (!p || !p.reps) return 0;
+  let st = p.s < 1.5 ? 0 : p.s < 4 ? 1 : p.s < 12 ? 2 : 3;
+  if (p.g === 1 || retr(p) < .75) st = Math.max(0, st - 1);
+  return st;
+}
+const strength = it => { const p = P(it); return !p ? 0 : p.s < 1.5 ? 1 : p.s < 4 ? 2 : p.s < 12 ? 3 : 4; };
+function whenTxt(due){
+  const d = (due - Date.now())/DAY;
+  if (d < .5) return 'più tardi, oggi';
+  if (d < 1.5) return 'domani';
+  if (d < 14) return `tra ${Math.round(d)} giorni`;
+  if (d < 60) return `tra ${Math.round(d/7)} settimane`;
+  return `tra ${Math.round(d/30)} mesi`;
 }
 function level(it){
   const p = P(it);
@@ -2621,6 +2719,7 @@ function settingsSheet(){
   openSheet(`<div class="sheet" role="dialog" aria-modal="true" aria-label="Impostazioni"><div class="sheet-head"><h2>Impostazioni</h2><button class="icon-btn" data-action="close" aria-label="Chiudi">${ICON.close}</button></div>
     <div class="sheet-body">
       <div class="field"><label>Carte nuove al giorno</label>${seg('newPerDay', [10, 20, 30, 50], npd)}<p class="hint">Hai già fatto tutte queste lezioni col tutor: con 20 al giorno rivedi tutto il materiale in circa ${Math.ceil(items().filter(i => !P(i)).length / 20)} giorni, poi restano solo i ripassi.</p></div>
+      <div class="field"><label>Quanto ricordare</label>${seg('retain', [0.85, 0.9, 0.95], p.retain || 0.9, v => v === 0.85 ? 'Leggero' : v === 0.9 ? 'Consigliato' : 'Intensivo')}<p class="hint">Consigliato: ricordi circa 9 carte su 10 quando tornano. Intensivo ne ricordi di più, ma le rivedi più spesso.</p></div>
       <div class="field"><label>Obiettivo giornaliero</label>${seg('goal', [30, 50, 100], goal, v => v + ' XP')}</div>
       <div class="field"><label>Suoni</label>${seg('mute', [false, true], !!p.mute, v => v ? 'Spenti' : 'Accesi')}</div>
       <div class="field"><label>Vibrazione</label>${seg('haptics', [true, false], p.haptics !== false, v => v ? 'Accesa' : 'Spenta')}</div>
@@ -2628,7 +2727,7 @@ function settingsSheet(){
         ${esVoices.length ? `<div class="voices">${esVoices.slice(0, 8).map(v => `<div class="voice-row ${v === esVoice ? 'on' : ''}"><button class="voice-pick" data-action="voice" data-uri="${esc(v.voiceURI)}"><span class="radio"></span><span class="t-txt"><b>${esc(v.name)}</b><span>${esc(v.lang)}${voiceScore(v) >= 60 ? ' · alta qualità' : ''}</span></span></button><button class="icon-btn" data-action="voice-try" data-uri="${esc(v.voiceURI)}" aria-label="Prova ${esc(v.name)}">${ICON.sound}</button></div>`).join('')}</div>` : `<p class="hint">Su questo dispositivo non ho trovato voci spagnole.</p>`}
         <p class="hint">Per una voce più naturale scarica una voce di qualità alta. Su iPhone: Impostazioni › Accessibilità › Contenuto letto › Voci › Spagnolo (Spagna), e scegli una voce «Premium» o «Avanzata». Su Mac: Impostazioni di Sistema › Accessibilità › Contenuto letto › Voce di sistema › Gestisci voci. Poi riapri Repaso: la migliore viene scelta da sola.</p></div>
       <div class="field"><label>Velocità della voce</label>${seg('pace', [0.85, 1, 1.12], p.pace || 1, v => v < 1 ? 'Più lenta' : v > 1 ? 'Più svelta' : 'Normale')}</div>
-      <div class="notice" style="margin-top:22px"><b>Come funziona.</b> Ogni carta torna quando stai per dimenticarla (algoritmo FSRS). All’inizio la riconosci, poi la scrivi, poi la usi in una frase. Gli errori tornano nella stessa sessione e finiscono nei Punti deboli.</div>
+      <div class="notice" style="margin-top:22px"><b>Come funziona.</b> Ogni carta torna quando stai per dimenticarla (algoritmo FSRS-5). Prima la riconosci, poi la ricordi e la scrivi, poi la usi dentro una frase del tutor. Il voto lo deduce l’app da come rispondi: scrivere a memoria e in fretta vale più che riconoscere. Gli errori tornano nella stessa sessione finché non li sai, e le carte nuove si dosano su quanto ti resta da ripassare.</div>
     </div></div>`);
 }
 
@@ -2891,27 +2990,33 @@ function buildQueue(scope, arg){
     if (!pool.length) return [];
     return Array.from({length:10}, (_, k) => { const g = pool[k % pool.length]; return genEx(g, k < 2 ? Math.min(k, P(g)?.reps || 0) : 2); });
   }
-  const due = pool.filter(i => P(i) && P(i).due <= now).sort((a,b) => P(a).due - P(b).due);
+  // reviews: the card closest to being forgotten comes first
+  const risk = i => retr(P(i), now);
+  const due = pool.filter(i => P(i) && P(i).due <= now).sort((a,b) => risk(a) - risk(b));
   const fresh = orderNew(pool.filter(i => !P(i)));
   const ahead = pool.filter(i => P(i) && P(i).due > now);
+  // new cards are dosed: fewer when reviews pile up or recent sessions went badly
+  const acc = profile().acc ?? .85;
+  let newCap = acc < .7 ? 3 : acc < .8 ? 5 : 8;
+  if (due.length > 25) newCap = Math.min(newCap, 2); else if (due.length > 14) newCap = Math.min(newCap, 4);
   let pick = [];
   if (scope === 'weak') pick = pool.filter(i => P(i) && (P(i).m > 0 || level(i) === 'weak')).sort((a,b) => weakScore(b) - weakScore(a)).slice(0, 12);
   else if (scope === 'daily') {
-    pick = due.slice(0, 14);
-    pick.push(...fresh.slice(0, Math.min(newLeft(), pick.length >= 12 ? 2 : Math.min(8, 14 - pick.length))));
-    if (pick.length < 8) pick.push(...ahead.sort((a,b) => P(a).due - P(b).due).slice(0, 8 - pick.length));
+    pick = due.slice(0, 15);
+    pick.push(...fresh.slice(0, Math.min(newLeft(), newCap)));
+    if (pick.length < 8) pick.push(...ahead.sort((a,b) => risk(a) - risk(b)).slice(0, 8 - pick.length));
   } else {
     pick = due.slice(0, 8);
-    pick.push(...fresh.slice(0, scope === 'train' ? 4 : 8));
-    pick.push(...shuffle(ahead).sort((a,b) => weakScore(b) - weakScore(a)).slice(0, Math.max(0, 12 - pick.length)));
+    pick.push(...fresh.slice(0, scope === 'train' ? 4 : Math.min(8, newCap + 3)));
+    pick.push(...ahead.sort((a,b) => risk(a) - risk(b)).slice(0, Math.max(0, 12 - pick.length)));
     pick = pick.slice(0, 14);
   }
   pick = [...new Set(pick)];
 
-  // each card becomes a chunk of exercises that stay together (rule or verb intro + first exercise)
+  // each card becomes a chunk of exercises that stay together (rule, verb or leech card + first exercise)
   const introduced = new Set();
   const ruleKnown = rid => items().some(i => i.ruleId === rid && P(i));
-  const matchable = force ? [] : pick.filter(i => P(i) && (i.kind === 'vocab' || i.kind === 'phrase') && cleanEs(i.es).length < 26 && i.it.length < 34);
+  const matchable = force ? [] : pick.filter(i => P(i) && stage(i) <= 1 && (i.kind === 'vocab' || i.kind === 'phrase') && cleanEs(i.es).length < 26 && i.it.length < 34);
   const matchSet = matchable.length >= 5 ? shuffle(matchable).slice(0, Math.min(5, Math.floor(matchable.length*.6))) : [];
   const reviews = [], news = [];
   for (const it of pick) {
@@ -2920,14 +3025,52 @@ function buildQueue(scope, arg){
     if (it.kind === 'drill' && it.ruleId && !P(it) && !introduced.has(it.ruleId) && !ruleKnown(it.ruleId)) {
       introduced.add(it.ruleId); chunk.unshift({type:'rule', rule:RULES[it.ruleId], item:it, intro:true});
     }
+    if ((P(it)?.lapses || 0) >= 4 && it.kind !== 'gen') chunk.unshift({type:'leech', item:it, intro:true});
     (P(it) ? reviews : news).push(chunk);
   }
   const chunks = shuffle(reviews);
   news.forEach((c, k) => chunks.splice(Math.min(chunks.length, k*2 + 1), 0, c));
   if (matchSet.length >= 4) chunks.splice(Math.min(chunks.length, 3), 0, [{type:'match', items:matchSet}]);
-  return chunks.flat();
+  return interleave(chunks);
+}
+// interleaving: never the same kind of exercise, or the same unit, twice in a row
+function interleave(chunks){
+  const out = [], rest = chunks.slice();
+  while (rest.length) {
+    const last = out[out.length - 1]?.at(-1);
+    let k = rest.findIndex(c => !last || (c.at(-1).type !== last.type && (!c.at(-1).item || c.at(-1).item.unit !== last.item?.unit)));
+    if (k < 0) k = 0;
+    out.push(rest.splice(k, 1)[0]);
+  }
+  return out.flat();
 }
 
+// sentences from the tutor's material, to practise a word inside real context
+let CTX = null;
+const ARTS = new Set(['el','la','los','las','un','una','unos','unas']);
+function ctxSentences(){
+  if (CTX) return CTX;
+  CTX = [];
+  for (const i of BUILT.items) if (i.kind === 'drill' && i.d.t !== 'q') {
+    const es = cleanEs(i.d.t === 'tr' ? i.d.es[0] : i.es), it = i.d.t === 'tr' ? i.d.it : i.d.it || i.it;
+    if (it && !/___|=|\d/.test(es) && es.split(' ').length >= 4) CTX.push({es, it, id:i.id});
+  }
+  return CTX;
+}
+function ctxEx(it){
+  if (it.kind !== 'vocab') return null;
+  const core = firstVar(it.es).split(' ').filter(w => !ARTS.has(bare(w)));
+  if (core.length !== 1 || bare(core[0]).length < 4) return null;
+  const target = bare(core[0]), hits = [];
+  for (const c of ctxSentences()) {
+    const toks = c.es.split(' ');
+    const k = toks.findIndex(t => bare(t).replace(/ /g, '') === target);
+    if (k >= 0) { const word = toks[k].replace(/[¿¡!?.,;:«»"]/g, ''); hits.push({...c, q:toks.map((t, j) => j === k ? t.replace(word, '___') : t).join(' '), word}); }
+  }
+  if (!hits.length) return null;
+  const h = pickOne(hits);
+  return {type:'ctx', item:it, q:h.q, sit:h.it, answers:[h.word], full:h.es};
+}
 function overlaps(a, b){ const A = new Set(bare(a).split(' ').filter(w => w.length >= 4)); return bare(b).split(' ').some(w => w.length >= 4 && A.has(w)); }
 function distractors(it, all, field, n=3){
   const val = x => field === 'es' ? cleanEs(x.es) : x.it;
@@ -2960,9 +3103,9 @@ function buildEx(it, all, es, itx){
   const extra = shuffle([...new Set(pool.filter(w => !words.some(x => bare(x) === bare(w))))]).slice(0, Math.min(3, Math.ceil(words.length/3)));
   return {type:'build', item:it, es, it:itx || it.it, toks:shuffle([...words, ...extra]).map((w, i) => ({i, w}))};
 }
-function drillEx(it, d, r, all){
+function drillEx(it, d, st, all){
   if (d.t === 'choice') {
-    if (r >= 2 && d.o[0].split(' ').length <= 3 && Math.random() < .4) return {type:'cloze', item:it, d, answers:[d.o[0]]};
+    if (st >= 2 && d.o[0].split(' ').length <= 3 && Math.random() < .5) return {type:'cloze', item:it, d, answers:[d.o[0]]};
     return {type:'choice', item:it, d, opts:shuffle(d.o), answer:d.o[0]};
   }
   if (d.t === 'q') return {type:'choice', item:it, d, opts:shuffle(d.o), answer:d.o[0]};
@@ -2973,48 +3116,63 @@ function drillEx(it, d, r, all){
   return {type:'reveal', item:it};
 }
 function makeEx(it, all, force){
-  const p = P(it), r = p?.reps || 0, s = p?.s || 0;
+  const p = P(it), r = p?.reps || 0, st = stage(it);
   if (it.kind === 'gen') return [genEx(it, r)];
   if (it.kind === 'verb') {
     const persons = PERSONS.filter(x => it.forms?.[x]);
     if (!persons.length) return [{type:'reveal', item:it}];
     const per = pickOne(persons), ans = it.forms[per];
     const others = [...new Set(persons.map(x => it.forms[x]).filter(f => f !== ans))];
-    const typed = force === 'conj' ? r > 0 || Math.random() < .5 : r >= 2 || (r === 1 && Math.random() < .5);
+    const typed = force === 'conj' ? st >= 1 : st >= 2;
     const ex = typed || !others.length ? {type:'conj', item:it, person:per, answer:ans} : {type:'conj-pick', item:it, person:per, opts:shuffle([ans, ...shuffle(others).slice(0, 3)]), answer:ans};
     return r === 0 && force !== 'conj' ? [{type:'verb-intro', item:it, intro:true}, ex] : [ex];
   }
-  if (it.kind === 'drill') return [drillEx(it, it.d, r, all)];
+  if (it.kind === 'drill') return [drillEx(it, it.d, st, all)];
   if (it.kind === 'grammar' || it.kind === 'fix') {
     const ds = it.drills || [];
     if (!ds.length) return [{type:'reveal', item:it}];
-    const ex = drillEx(it, ds[r % ds.length], r, all);
+    const ex = drillEx(it, ds[r % ds.length], st, all);
     return r === 0 && it.kind === 'grammar' ? [{type:'rule', rule:{title:it.es, text:it.it}, item:it, intro:true}, ex] : [ex];
   }
   if (force === 'dict' && canSpeak) return [{type:'dict', item:it}];
   const canBuild = it.kind === 'phrase' && cleanEs(it.es).split(' ').length >= 3 && !it.es.includes('/');
-  if (r === 0) return [pickEx(it, all, 'es-it')];
-  if (r === 1) return [canSpeak && Math.random() < .5 ? listenEx(it, all) : pickEx(it, all, 'it-es')];
-  const menu = [() => ({type:'type', item:it}), () => ({type:'type', item:it})];
+  if (st === 0) {
+    if (!p) return [pickEx(it, all, 'es-it')];
+    const fmts = [() => pickEx(it, all, 'es-it'), () => pickEx(it, all, 'it-es')];
+    if (canSpeak) fmts.push(() => listenEx(it, all));
+    return [pickOne(fmts)()];
+  }
+  if (st === 1) return [canSpeak && Math.random() < .45 ? listenEx(it, all) : pickEx(it, all, 'it-es')];
+  const menu = [() => ({type:'type', item:it})];
   if (canSpeak && !/…/.test(it.es)) menu.push(() => ({type:'dict', item:it}));
-  if (s < 7) menu.push(() => pickEx(it, all, 'it-es'));
-  if (canBuild) menu.push(() => buildEx(it, all), () => buildEx(it, all));
+  if (canBuild) menu.push(() => buildEx(it, all));
+  if (st === 3) { const c = ctxEx(it); if (c) menu.push(() => c, () => c); }
   return [pickOne(menu)()];
+}
+// a second miss in the same session drops to an easier format, so the card can still be won back
+function easier(ex, all){
+  const it = ex.item;
+  if (ex.type === 'conj') { const per = PERSONS.filter(x => it.forms[x]); const others = [...new Set(per.map(x => it.forms[x]).filter(f => f !== ex.answer))]; if (others.length) return {type:'conj-pick', item:it, person:ex.person, opts:shuffle([ex.answer, ...shuffle(others).slice(0, 3)]), answer:ex.answer}; }
+  if (['type','dict','ctx'].includes(ex.type) && (it.kind === 'vocab' || it.kind === 'phrase')) return pickEx(it, all, 'it-es');
+  if (ex.type === 'cloze' && ex.d?.o) return {type:'choice', item:it, d:ex.d, opts:shuffle(ex.d.o), answer:ex.d.o[0]};
+  return null;
 }
 
 function startSession(scope, arg){
   const queue = buildQueue(scope, arg);
   if (!queue.length) return toast(scope === 'weak' ? 'Nessun punto debole in questo momento' : 'Niente da ripassare qui per ora');
   closeSheet();
-  S = {scope, queue, i:0, total:queue.length, xp:0, right:0, answered:0, newSeen:0, missed:new Map(), requeued:new Set(), graded:new Set(), started:Date.now(), state:'ask', sel:null, ex:null, saved:false};
+  S = {scope, queue, i:0, total:queue.length, xp:0, right:0, answered:0, newSeen:0, missed:new Map(), tries:new Map(), graded:new Set(), sched:[], started:Date.now(), state:'ask', sel:null, ex:null, saved:false, combo:0, best:0};
   $('#layer').innerHTML = `<div class="session" role="dialog" aria-modal="true" aria-label="Sessione di ripasso">
-    <div class="s-top"><button class="icon-btn" data-action="quit" aria-label="Chiudi sessione">${ICON.close}</button><div class="progress"><span id="prog"></span></div><div class="s-xp num" id="sxp">0 XP</div></div>
+    <div class="s-top"><button class="icon-btn" data-action="quit" aria-label="Chiudi sessione">${ICON.close}</button><div class="progress"><span id="prog"></span></div><div class="s-count num" id="scount"></div><div class="s-xp num" id="sxp">0 XP</div></div>
     <div class="s-body" id="sbody"></div><div class="s-foot" id="sfoot"></div></div>`;
   document.body.style.overflow = 'hidden';
   showEx();
 }
 function lessonTag(it){ const l = it && lessonMap()[it.lessonId]; return l ? `${l.sheet ? 'Scheda' : l.label} · ${l.title}` : ''; }
-function setProgress(){ $('#prog').style.width = Math.round(S.i / S.total * 100) + '%'; $('#sxp').textContent = S.xp + ' XP'; }
+function setProgress(){ $('#prog').style.width = Math.round(S.i / S.total * 100) + '%'; $('#sxp').textContent = S.xp + ' XP'; const c = $('#scount'); if (c) c.textContent = Math.min(S.i + 1, S.total) + ' / ' + S.total; }
+// time spent away from the app does not count as thinking time
+document.addEventListener('visibilitychange', () => { if (!S) return; if (document.visibilityState === 'hidden') S.away = Date.now(); else if (S.away) { S.t0 += Date.now() - S.away; S.away = 0; } });
 
 const spk = (text, big) => `<button class="speak ${big ? 'big' : ''}" data-action="say" data-text="${esc(text)}" aria-label="Ascolta">${ICON.sound}</button>`;
 const optsHtml = (list, cls='') => `<div class="opts ${cls}">${list.map((o,i) => `<button class="opt" data-opt="${i}" aria-pressed="false"><span class="kbd">${i+1}</span><span>${esc(o)}</span></button>`).join('')}</div>`;
@@ -3025,11 +3183,24 @@ const clozeHtml = (q, it) => { const [a, b] = q.split('___'); return `<div class
 function showEx(){
   setProgress();
   if (S.i >= S.queue.length) return finish();
-  const ex = S.ex = S.queue[S.i]; S.state = 'ask'; S.sel = null; S.tokens = null; S.matchState = null; S.said = '';
+  const ex = S.ex = S.queue[S.i]; S.state = 'ask'; S.sel = null; S.tokens = null; S.matchState = null; S.said = ''; S.t0 = Date.now(); S.tAns = 0;
   const it = ex.item, isNew = it && !P(it) && !S.graded.has(it.id) && !ex.retry;
-  const tag = it ? `<span class="pill">${esc(lessonTag(it))}</span>` : '';
   let k = '', body = '';
   switch (ex.type) {
+    case 'leech': {
+      const c = ctxEx(it) || null;
+      k = 'Questa ti sfugge spesso';
+      body = `<div class="flash leech"><div class="eyebrow">Rinforzo · l’hai sbagliata ${P(it).lapses} volte</div><div class="prompt-row">${spk(it.es)}<div class="w">${esc(cleanEs(it.es))}</div></div><div class="tr">${esc(it.it || it.d?.it || '')}</div>
+        ${it.note ? `<div class="nt">${esc(it.note)}</div>` : it.ruleId && RULES[it.ruleId] ? `<div class="nt"><b>${esc(RULES[it.ruleId].title)}.</b> ${esc(RULES[it.ruleId].text)}</div>` : ''}
+        ${c ? `<div class="exl">${esc(c.full)}<em>${esc(c.sit)}</em></div>` : ''}
+        <div class="tip">Leggila ad alta voce e pensa a una frase tua che la usa: collegarla a qualcosa di tuo la fissa meglio.</div></div>`;
+      setTimeout(() => speak(it.es), 250);
+      break;
+    }
+    case 'ctx':
+      k = 'Usa la parola nella frase';
+      body = `<div class="qcard">${clozeHtml(ex.q, ex.sit)}<div class="hintline">Parola: <b>${esc(it.it)}</b></div></div>${typeBox('La parola che manca…')}`;
+      break;
     case 'rule': {
       const r = ex.rule, exs = items().filter(i => i.ruleId === r.id && i.kind === 'drill' && i.d.t !== 'q' && i !== ex.item && !S.queue.some(q => q.item === i)).slice(0, 3);
       k = 'Ripassa la regola';
@@ -3121,13 +3292,15 @@ function showEx(){
       break;
     }
   }
-  const kicker = `<span class="k ${isNew ? 'new' : ''}">${isNew && !ex.intro ? '<span class="newdot">Nuova</span> ' : ''}${k}</span>`;
-  $('#sbody').innerHTML = `<div class="s-inner"><div class="s-kicker">${kicker}${tag}</div>${body}</div>`;
+  const st = it && !ex.intro && ex.type !== 'match' ? (isNew ? -1 : stage(it)) : null;
+  const phase = ['ctx','tr','build','fix'].includes(ex.type) ? 3 : RECALL.has(ex.type) || ex.type === 'gen' && ex.mode !== 'pick' ? 2 : 1;
+  const meta = st === null ? '' : `<div class="s-meta"><span class="stage-chip st${st < 0 ? -1 : phase}">${st < 0 ? 'Nuova' : ['','Riconosci','Ricorda','Usa'][phase]}</span>${st >= 0 ? `<span class="dots" title="Forza del ricordo" aria-label="Forza del ricordo ${strength(it)} su 4">${[1,2,3,4].map(n => `<i class="${n <= strength(it) ? 'on' : ''}"></i>`).join('')}</span>` : ''}${ex.retry ? '<span class="stage-chip again">Di nuovo</span>' : ''}<span class="s-src">${esc(lessonTag(it))}</span></div>`;
+  $('#sbody').innerHTML = `<div class="s-inner">${meta}<h2 class="s-q">${k}</h2>${body}</div>`;
   $('#sbody').scrollTop = 0;
   footAsk();
   const ans = $('#ans');
   if (ans) {
-    ans.addEventListener('input', () => { $('#check').disabled = !ans.value.trim(); if (ex.type === 'cloze') $('#gap').textContent = ans.value || '?'; });
+    ans.addEventListener('input', () => { $('#check').disabled = !ans.value.trim(); if (ex.type === 'cloze' || ex.type === 'ctx') $('#gap').textContent = ans.value || '?'; });
     if (matchMedia('(hover:hover)').matches) setTimeout(() => { ans.focus(); if (ex.type === 'fix') ans.setSelectionRange(ans.value.length, ans.value.length); }, 50);
     if (ex.type === 'fix') $('#check').disabled = false;
   }
@@ -3135,10 +3308,10 @@ function showEx(){
 function footAsk(){
   const ex = S.ex, f = $('#sfoot'); f.className = 's-foot';
   let btn;
-  if (ex.intro) btn = `<button class="btn wide" id="cont" data-action="next">Ho capito</button>`;
+  if (ex.intro) btn = `<button class="btn wide" id="cont" data-action="next">${ex.type === 'leech' ? 'Pronto, chiedimela' : 'Ho capito'}</button>`;
   else if (ex.type === 'reveal') btn = `<button class="btn wide" data-action="reveal">Mostra la risposta</button>`;
   else if (ex.type === 'match') btn = `<button class="btn wide" id="check" disabled>Abbina tutte le coppie</button>`;
-  else btn = `<div style="display:flex;gap:10px"><button class="btn ghost" data-action="skip">Non lo so</button><button class="btn" style="flex:1" id="check" data-action="check" disabled>Controlla</button></div>`;
+  else btn = `<div class="ask-row"><button class="btn ghost" data-action="skip">Non lo so</button><button class="btn" id="check" data-action="check" disabled>Controlla</button></div>`;
   const hasOpts = !!document.querySelector('.opt[data-opt]');
   f.innerHTML = `<div class="s-foot-in">${btn}<div class="keys-hint">Invio per continuare${hasOpts ? ' · 1–4 per scegliere' : ''} · Esc per uscire</div></div>`;
 }
@@ -3146,6 +3319,7 @@ function footAsk(){
 function expected(ex){
   switch (ex.type) {
     case 'type': case 'dict': return [ex.item.es];
+    case 'ctx': return ex.answers;
     case 'conj': return [ex.answer];
     case 'cloze': return ex.answers;
     case 'fix': return ex.d.a;
@@ -3158,6 +3332,7 @@ function correctText(ex){
   if (['pick','listen','conj-pick'].includes(ex.type)) return ex.answer;
   if (ex.type === 'choice') return ex.d.t === 'q' ? ex.answer : ex.d.q.replace('___', ex.answer);
   if (ex.type === 'cloze') return ex.d.q.replace('___', ex.answers[0]);
+  if (ex.type === 'ctx') return ex.full;
   if (ex.type === 'build') return ex.es;
   if (ex.type === 'gen') return ex.g === 'num' && ex.mode === 'listen' ? `${ex.n} (${numEs(ex.n)})` : ex.g === 'poss' ? `${ex.answer} ${ex.noun[0]}` : ex.answer;
   return cleanEs(expected(ex)[0] || '');
@@ -3165,7 +3340,7 @@ function correctText(ex){
 const usesOpts = ex => ['pick','listen','conj-pick','choice'].includes(ex.type) || ex.type === 'gen' && ex.mode === 'pick';
 function check(skip){
   if (S.state !== 'ask') return;
-  const ex = S.ex;
+  const ex = S.ex; S.tAns = Date.now();
   let r = 'bad', msg = '';
   const said = ex.type === 'build' ? S.tokens.lane.map(i => S.tokens.all[i].w).join(' ') : usesOpts(ex) ? (ex.opts[S.sel] ?? '') : ($('#ans')?.value || '').trim();
   S.said = skip ? '' : said;
@@ -3181,16 +3356,45 @@ function check(skip){
   }
   conclude(r, msg);
 }
+// the grade comes from the evidence: recalling beats recognising, a fast answer beats a slow one
+const RECALL = new Set(['type','dict','conj','cloze','tr','fix','build','ctx']);
+function evGrade(ex, r){
+  if (r === 'bad') return 1;
+  if (r === 'warn') return 2;
+  const ms = (S.tAns || Date.now()) - S.t0, len = (correctText(ex) || '').length;
+  const recall = RECALL.has(ex.type) || ex.type === 'gen' && ex.mode !== 'pick';
+  if (!recall) return ms > 9000 ? 2 : 3;
+  if (ms < 2500 + 110*len) return 4;
+  return ms > 12000 + 350*len ? 2 : 3;
+}
+// letter-by-letter comparison, to show exactly where an answer went wrong
+function diffPair(said, right){
+  const a = [...said], b = [...right], low = c => c.toLowerCase();
+  if (a.length > 160 || b.length > 160) return null;
+  const L = Array.from({length:a.length + 1}, () => new Array(b.length + 1).fill(0));
+  for (let i = a.length - 1; i >= 0; i--) for (let j = b.length - 1; j >= 0; j--) L[i][j] = low(a[i]) === low(b[j]) ? L[i+1][j+1] + 1 : Math.max(L[i+1][j], L[i][j+1]);
+  let x = '', y = '';
+  for (let i = 0, j = 0; i < a.length || j < b.length;) {
+    if (i < a.length && j < b.length && low(a[i]) === low(b[j])) { x += esc(a[i]); y += esc(b[j]); i++; j++; }
+    else if (j < b.length && (i >= a.length || L[i][j+1] >= L[i+1][j])) { y += `<ins>${esc(b[j])}</ins>`; j++; }
+    else { x += `<del>${esc(a[i])}</del>`; i++; }
+  }
+  return {said:x.replace(/<\/del><del>/g, ''), right:y.replace(/<\/ins><ins>/g, '')};
+}
 function conclude(r, msg, extra){
   const ex = S.ex, it = ex.item;
-  grade_(it, r === 'ok' ? 3 : r === 'warn' ? 2 : 1, S.said);
-  if (r === 'bad' && it && !S.requeued.has(it.id)) {
-    S.requeued.add(it.id);
-    const retry = ex.type === 'gen' ? {...genEx(it, 0), retry:true} : usesOpts(ex) ? {...ex, opts:shuffle(ex.opts), retry:true} : ex.type === 'build' ? {...ex, toks:shuffle(ex.toks), retry:true} : {...ex, retry:true};
+  const graded = it && !ex.retry && !S.graded.has(it.id);
+  grade_(it, evGrade(ex, r), S.said);
+  const tries = it ? S.tries.get(it.id) || 0 : 0;
+  if (r === 'bad' && it && tries < 2) {
+    S.tries.set(it.id, tries + 1);
+    const all = items(), base = tries === 1 ? easier(ex, all) || ex : ex;
+    const retry = base.type === 'gen' ? {...genEx(it, 0), retry:true} : base.opts ? {...base, opts:shuffle(base.opts), retry:true} : base.type === 'build' ? {...base, toks:shuffle(base.toks), retry:true} : {...base, retry:true};
     S.queue.splice(Math.min(S.queue.length, S.i + 3 + Math.floor(Math.random()*3)), 0, retry); S.total = S.queue.length;
   }
+  const nextTxt = graded && P(it) ? whenTxt(P(it).due) : '';
   const lines = {ok:['¡Muy bien!','¡Perfecto!','¡Eso es!','¡Genial!','¡Estupendo!','¡Así se hace!','¡Bien hecho!'], warn:['¡Casi!','¡Por poco!'], bad:['Non proprio','Quasi, ma no','Ci riproviamo tra poco']};
-  S.combo = r === 'bad' ? 0 : (S.combo || 0) + 1;
+  S.combo = r === 'bad' ? 0 : (S.combo || 0) + 1; S.best = Math.max(S.best, S.combo);
   const combo = r !== 'bad' && [3, 5, 8, 12, 16, 20, 25, 30].includes(S.combo);
   const head = pickOne(lines[r]) + (combo ? ` <span class="combo">${S.combo} di fila</span>` : ''), correct = correctText(ex);
   const why = ex.d?.why || (ex.type === 'gen' ? '' : '');
@@ -3201,12 +3405,18 @@ function conclude(r, msg, extra){
   f.innerHTML = `<div class="s-foot-in"><div class="fb"><span class="badge">${r === 'ok' ? ICON.check : r === 'warn' ? ICON.warn : ICON.x}</span><div style="min-width:0;flex:1">
       <div class="h">${head}</div>
       ${extra?.top || ''}
-      ${r === 'bad' ? `<div class="d">Risposta corretta: <b>${esc(correct)}</b></div>${S.said && !usesOpts(ex) ? `<div class="d said">Hai scritto: <s>${esc(S.said)}</s></div>` : ''}` : msg ? `<div class="d">${esc(msg)}</div>` : showCorrect && correct ? `<div class="d">${esc(correct)}</div>` : ''}
+      ${(() => {
+        const typed = S.said && !usesOpts(ex) && ex.type !== 'build' && r !== 'ok';
+        const target = typed ? (r === 'warn' && msg.includes(': ') ? msg.split(': ').slice(1).join(': ') : (['cloze','ctx','conj'].includes(ex.type) ? expected(ex)[0] : correct)) : '';
+        const dp = typed && target ? diffPair(S.said, cleanEs(target)) : null;
+        if (dp) return `<div class="diff"><div><span>Hai scritto</span><b>${dp.said}</b></div><div><span>Corretto</span><b>${dp.right}</b></div></div>${['cloze','ctx'].includes(ex.type) ? `<div class="d">${esc(correct)}</div>` : ''}${r === 'warn' ? `<div class="why">${esc(msg.split(':')[0])}.</div>` : ''}`;
+        return r === 'bad' ? `<div class="d">Risposta corretta: <b>${esc(correct)}</b></div>` : msg ? `<div class="d">${esc(msg)}</div>` : showCorrect && correct ? `<div class="d">${esc(correct)}</div>` : '';
+      })()}
       ${extra?.note ? `<div class="why">${esc(extra.note)}</div>` : ''}
       ${trans && r !== 'ok' ? `<div class="why">${esc(trans)}</div>` : ''}
       ${why && (r !== 'ok' || ex.d?.t === 'q' || Math.random() < .5) ? `<div class="why">${esc(why)}</div>` : r !== 'ok' && rule ? `<div class="why"><b>${esc(rule.title)}.</b> ${esc(rule.text)}</div>` : r !== 'ok' && it?.note ? `<div class="why">${esc(it.note)}</div>` : ''}
       <div id="explain"></div>
-      <div class="src">${esc(lessonTag(it)).toUpperCase()}</div></div></div>
+      ${nextTxt ? `<div class="next-chip">${ICON.path}<span>${r === 'bad' ? 'Te la richiedo tra poco, in questa sessione' : 'La rivedrai ' + nextTxt}</span></div>` : ''}</div></div>
     <div style="display:flex;gap:10px">${r === 'bad' && sampleFn && ex.type !== 'gen' ? `<button class="btn ghost" data-action="explain" title="Chiedi a Claude">${ICON.spark} Perché?</button>` : ''}<button class="btn wide ${r === 'bad' ? 'bad' : 'ok'}" style="flex:1" id="cont" data-action="next">Continua</button></div></div>`;
   tone(r === 'bad' ? 'bad' : 'ok');
   if (combo) setTimeout(() => haptic('combo'), 260);
@@ -3226,6 +3436,7 @@ function grade_(it, g, said){
   const prev = P(it);
   if (!prev) S.newSeen++;
   const next = schedule(prev, g);
+  S.sched.push(next.due);
   if (g === 1 && said) next.w = [said.slice(0, 80), ...(prev?.w || []).filter(x => x !== said)].slice(0, 3);
   setP(it, next);
 }
@@ -3286,7 +3497,9 @@ function saveSession(){
   if (!S || S.saved || (!S.xp && !S.newSeen)) return;
   S.saved = true;
   const p = profile(), k = todayKey();
-  saveProfile({xpByDay:{...(p.xpByDay||{}), [k]:(p.xpByDay?.[k]||0) + S.xp}, newByDay:{[k]:(p.newByDay?.[k]||0) + S.newSeen}});
+  const patch = {xpByDay:{...(p.xpByDay||{}), [k]:(p.xpByDay?.[k]||0) + S.xp}, newByDay:{[k]:(p.newByDay?.[k]||0) + S.newSeen}};
+  if (S.answered >= 5) patch.acc = +(.7*(p.acc ?? .85) + .3*(S.right/S.answered)).toFixed(3);
+  saveProfile(patch);
   Store.flush();
 }
 function finish(){
@@ -3298,8 +3511,9 @@ function finish(){
   $('#sbody').innerHTML = `<div class="s-inner done-screen">
     <svg class="burst" viewBox="0 0 120 120" aria-hidden="true"><g>${Array.from({length:12}, (_,i) => `<rect x="57" y="4" width="6" height="22" rx="3" fill="currentColor" transform="rotate(${i*30} 60 60)" opacity="${i%2 ? .5 : 1}"/>`).join('')}</g><circle cx="60" cy="60" r="24" fill="currentColor"/></svg>
     <div class="big">¡Sesión completada!</div>
-    <div class="done-tiles"><div><b class="num">${S.xp}</b><span>XP</span></div><div><b class="num">${acc}%</b><span>Precisione</span></div><div><b class="num">${mins}′</b><span>Tempo</span></div></div>
-    <div class="eyebrow" style="color:var(--saffron-deep)">${st} ${st === 1 ? 'giorno' : 'giorni'} di fila${S.newSeen ? ` · ${S.newSeen} carte nuove` : ''}</div>
+    <div class="done-tiles"><div><b class="num">${S.xp}</b><span>XP</span></div><div><b class="num">${acc}%</b><span>Precisione</span></div><div><b class="num">${S.best}</b><span>Serie migliore</span></div></div>
+    <div class="eyebrow" style="color:var(--saffron-deep)">${st} ${st === 1 ? 'giorno' : 'giorni'} di fila · ${mins} min${S.newSeen ? ` · ${S.newSeen} carte nuove` : ''}</div>
+    ${schedBuckets()}
     ${missed.length ? `<div class="missed"><div class="section-title" style="margin-top:6px"><h3>Da rivedere</h3><span class="eyebrow">tornano presto</span></div>
       <div class="words">${missed.map(({it, said, correct}) => { const plain = ['vocab','phrase'].includes(it.kind); return `<div class="word" style="grid-template-columns:12px 1fr"><span class="dot" style="background:var(--bad)"></span><span style="min-width:0"><span class="es" style="display:block">${esc(plain ? cleanEs(it.es) : correct || cleanEs(it.es))}</span><span class="it">${said ? `<s>${esc(said)}</s> · ` : ''}${esc(plain ? it.it : it.kind === 'drill' ? (it.d.it || '') : it.kind === 'gen' ? it.es : it.it)}</span></span></div>`; }).join('')}</div></div>`
       : `<p style="color:var(--muted);font-weight:600;margin:0">Nessun errore. Le prossime ripetizioni saranno più distanziate.</p>`}
@@ -3307,6 +3521,15 @@ function finish(){
   $('#sfoot').className = 's-foot';
   $('#sfoot').innerHTML = `<div class="s-foot-in"><button class="btn wide" id="cont" data-action="quit">Continua</button></div>`;
   S.state = 'done';
+}
+function schedBuckets(){
+  if (!S.sched.length) return '';
+  const B = [['Oggi o domani', 1.5], ['In settimana', 7.5], ['Entro un mese', 31], ['Più avanti', Infinity]], n = B.map(() => 0);
+  for (const due of S.sched) { const d = (due - Date.now())/DAY; n[B.findIndex(b => d < b[1])]++; }
+  const max = Math.max(...n);
+  return `<div class="missed"><div class="section-title" style="margin-top:6px"><h3>Quando le rivedrai</h3><span class="eyebrow">memoria al ${Math.round(retention()*100)}%</span></div>
+    <div class="buckets">${B.map((b, i) => `<div class="bk"><span>${b[0]}</span><div class="bk-bar"><i style="width:${max ? n[i]/max*100 : 0}%"></i></div><b class="num">${n[i]}</b></div>`).join('')}</div>
+    <p class="hint">Ogni carta torna proprio quando stai per dimenticarla: più la sai, più si allontana.</p></div>`;
 }
 function quit(){ saveSession(); S = null; try { speechSynthesis.cancel(); } catch {} $('#layer').innerHTML = ''; document.body.style.overflow = ''; render(); }
 
