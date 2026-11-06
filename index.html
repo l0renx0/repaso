@@ -116,6 +116,7 @@ h1,h2,h3{font-family:var(--f-display); text-wrap:balance; margin:0; letter-spaci
 .hero h2{font-size:1.75rem; line-height:1.1}
 .hero p{margin:6px 0 18px; opacity:.88; font-weight:600}
 .hero .btn{background:var(--on-cobalt); color:var(--cobalt); box-shadow:0 4px 0 color-mix(in srgb, var(--on-cobalt) 55%, var(--cobalt-deep))}
+.hero .btn[disabled]{opacity:.6; box-shadow:none}
 .ring{width:108px; height:108px}
 .ring .track{stroke:color-mix(in srgb, var(--on-cobalt) 22%, transparent)}
 .ring .bar{stroke:var(--saffron); transition:stroke-dashoffset .8s cubic-bezier(.2,.8,.2,1)}
@@ -699,6 +700,8 @@ mark{background:linear-gradient(transparent 52%, color-mix(in srgb, var(--saffro
 .bk b{text-align:right}
 .bk-bar{height:10px; border-radius:99px; background:var(--sunk); overflow:hidden}
 .bk-bar i{display:block; height:100%; border-radius:99px; background:var(--cobalt)}
+
+.session,.scrim{top:var(--vvt, 0px); bottom:auto; height:var(--vvh, 100%)}
 
 @media (prefers-reduced-motion: reduce){
   *,*::before,*::after{animation-duration:.01ms!important; animation-iteration-count:1!important; transition-duration:.01ms!important}
@@ -2101,9 +2104,21 @@ const noSubj = s => s.replace(/^(yo|tú|tu|nosotros|nosotras|vosotros|vosotras) 
 function lev(a,b){ const m=a.length,n=b.length; if(!m) return n; if(!n) return m; let p=Array.from({length:n+1},(_,i)=>i); for(let i=1;i<=m;i++){ const c=[i]; for(let j=1;j<=n;j++) c[j]=Math.min(p[j]+1,c[j-1]+1,p[j-1]+(a[i-1]===b[j-1]?0:1)); p=c; } return p[n]; }
 function answersOf(list){
   const out = [];
-  for (const a of list) { const c = cleanEs(a); out.push(c); if (c.includes(' / ')) out.push(...c.split(' / ')); }
+  for (const a of list) {
+    const c = cleanEs(a); out.push(c);
+    if (!c.includes(' / ')) continue;
+    const parts = c.split(' / ').map(x => x.trim()), head = parts[0].split(' ');
+    out.push(...parts);
+    // a shorter second part that is the same word in another form completes the first: «estoy casado / casada» → «estoy casada»
+    for (const alt of parts.slice(1)) {
+      const w = alt.split(' ');
+      if (w.length < head.length && bare(w[0]).slice(0, 3) === bare(head[head.length - w.length]).slice(0, 3)) out.push([...head.slice(0, head.length - w.length), ...w].join(' '));
+    }
+  }
   return [...new Set(out.map(s => s.trim()).filter(Boolean))];
 }
+// cards that mean exactly the same thing in Italian (disculpa / perdona, los deberes / las tareas) are synonyms of each other
+const synonyms = it => items().filter(o => o !== it && (o.kind === 'vocab' || o.kind === 'phrase') && (it.kind === 'vocab' || it.kind === 'phrase') && norm(o.it) === norm(it.it)).map(o => o.es);
 function grade(input, answers, sentence){
   const u = norm(input); if (!u) return {r:'bad'};
   const list = answersOf(answers);
@@ -2249,7 +2264,7 @@ function genEx(it, reps){
     const alts = [[h % 12 + 1, m], [h, (60 - m) % 60], [h, (m + 15) % 60], [(h + 10) % 12 + 1, m], [h, (m + 30) % 60]];
     const ans = timeEs(h, m), opts = [ans];
     for (const [hh, mm] of shuffle(alts)) { const t = timeEs(hh || 12, mm); if (!opts.includes(t) && opts.length < 4) opts.push(t); }
-    return {type:'gen', item:it, g:'clock', mode:write ? 'write' : 'pick', h, m, opts:shuffle(opts), answer:ans, answers:[ans, ans.replace(' en punto','')]};
+    return {type:'gen', item:it, g:'clock', mode:write ? 'write' : 'pick', h, m, opts:shuffle(opts), answer:ans, answers:[ans, ans.replace(' en punto',''), ans.replace(/^(Son|Es) /, ''), ans.replace(/^(Son|Es) /, '').replace(' en punto','')]};
   }
   if (g === 'ubic') {
     const key = pickOne(Object.keys(UBIC)), ex = UBIC_EXCL[key] || [];
@@ -2259,8 +2274,9 @@ function genEx(it, reps){
   if (g === 'poss') {
     const p = pickOne(POSS), n = pickOne(POSS_N), fem = n[2][0] === 'f', pl = n[2].endsWith('p');
     const ans = p[(fem ? 3 : 1) + (pl ? 1 : 0)];
-    const opts = [ans, ...shuffle(POSS_ALL.filter(x => x !== ans && (x.startsWith(ans.slice(0, 2)) || Math.random() < .25))).slice(0, 3)];
-    return {type:'gen', item:it, g:'poss', mode:'pick', person:p[0], noun:n, opts:shuffle([...new Set(opts)]), answer:ans};
+    const near = [...new Set(p.slice(1))].filter(x => x !== ans), rest = shuffle(POSS_ALL.filter(x => x !== ans && !near.includes(x)));
+    const opts = [ans, ...near, ...rest].slice(0, 4);
+    return {type:'gen', item:it, g:'poss', mode:'pick', person:p[0], noun:n, opts:shuffle(opts), answer:ans};
   }
   return {type:'reveal', item:it};
 }
@@ -2296,6 +2312,19 @@ const Store = {
     try {
       const cloud = {prog:{}, lessons:{}, items:{}, meta:{}};
       for (const name of Object.keys(cloud)) {
+        if (name === 'items') try {
+          // more than a thousand imported items: read them in pages, oldest first
+          let after = -1;
+          for (let page = 0; page < 30; page++) {
+            const snap = await this.col(name).where('createdAt', '>', after).orderBy('createdAt').limit(1000).get();
+            for (const d of snap.docs) cloud[name][d.id] = structuredClone(d.data());
+            if (snap.size < 1000) break;
+            after = snap.docs[snap.docs.length - 1].data().createdAt;
+          }
+          const legacy = await this.col(name).limit(1000).get();   // items saved without a date
+          for (const d of legacy.docs) if (!cloud[name][d.id]) cloud[name][d.id] = structuredClone(d.data());
+          continue;
+        } catch { /* the paged query isn't available: fall back to a plain read */ }
         const snap = await this.col(name).limit(1000).get();
         for (const d of snap.docs) cloud[name][d.id] = structuredClone(d.data());
       }
@@ -3040,7 +3069,9 @@ function buildQueue(scope, arg){
   const introduced = new Set();
   const ruleKnown = rid => items().some(i => i.ruleId === rid && P(i));
   const matchable = force ? [] : pick.filter(i => P(i) && stage(i) <= 1 && (i.kind === 'vocab' || i.kind === 'phrase') && cleanEs(i.es).length < 26 && i.it.length < 34);
-  const matchSet = matchable.length >= 5 ? shuffle(matchable).slice(0, Math.min(5, Math.floor(matchable.length*.6))) : [];
+  const uniq = [], seenM = new Set();
+  for (const i of shuffle(matchable)) { const a = 'it:' + norm(i.it), e = 'es:' + norm(cleanEs(i.es)); if (seenM.has(a) || seenM.has(e)) continue; seenM.add(a); seenM.add(e); uniq.push(i); }
+  const matchSet = uniq.length >= 5 ? uniq.slice(0, Math.min(5, Math.floor(uniq.length*.6))) : [];
   const reviews = [], news = [];
   for (const it of pick) {
     if (matchSet.includes(it)) continue;
@@ -3096,11 +3127,14 @@ function ctxEx(it){
 }
 function overlaps(a, b){ const A = new Set(bare(a).split(' ').filter(w => w.length >= 4)); return bare(b).split(' ').some(w => w.length >= 4 && A.has(w)); }
 function distractors(it, all, field, n=3){
+  // never an option that is also right: the same meaning, the same word, or a meaning of the same word («estar bueno»: sabroso / guapo)
+  const sameWord = all.filter(o => o !== it && norm(cleanEs(o.es)) === norm(cleanEs(it.es))).map(o => norm(o.it));
+  const twin = x => norm(x.it) === norm(it.it) || norm(cleanEs(x.es)) === norm(cleanEs(it.es)) || sameWord.includes(norm(x.it));
   const val = x => field === 'es' ? cleanEs(x.es) : x.it;
   const me = val(it), out = [];
   const pools = [all.filter(x => x.kind === it.kind && x.unit === it.unit), all.filter(x => x.kind === it.kind && x.lessonId === it.lessonId), all.filter(x => x.kind === 'vocab' || x.kind === 'phrase')];
   for (const src of pools) for (const x of shuffle(src)) {
-    if (x === it) continue;
+    if (x === it || twin(x)) continue;
     const v = val(x);
     if (!v || norm(v) === norm(me) || overlaps(v, me) || out.some(o => norm(o) === norm(v))) continue;
     out.push(v); if (out.length >= n) return out;
@@ -3158,7 +3192,8 @@ function makeEx(it, all, force){
     return r === 0 && it.kind === 'grammar' ? [{type:'rule', rule:{title:it.es, text:it.it}, item:it, intro:true}, ex] : [ex];
   }
   if (force === 'dict' && canSpeak) return [{type:'dict', item:it}];
-  const canBuild = it.kind === 'phrase' && cleanEs(it.es).split(' ').length >= 3 && !it.es.includes('/');
+  const canBuild = it.kind === 'phrase' && cleanEs(it.es).split(' ').length >= 3 && !it.es.includes('/') && !/…/.test(it.es);
+  if (/…/.test(it.es) && st >= 2) return [canSpeak && Math.random() < .4 ? listenEx(it, all) : pickEx(it, all, 'it-es')];
   if (st === 0) {
     if (!p) return [pickEx(it, all, 'es-it')];
     const fmts = [() => pickEx(it, all, 'es-it'), () => pickEx(it, all, 'it-es')];
@@ -3201,7 +3236,7 @@ document.addEventListener('visibilitychange', () => { if (!S) return; if (docume
 const spk = (text, big) => `<button class="speak ${big ? 'big' : ''}" data-action="say" data-text="${esc(text)}" aria-label="Ascolta">${ICON.sound}</button>`;
 const optsHtml = (list, cls='') => `<div class="opts ${cls}">${list.map((o,i) => `<button class="opt" data-opt="${i}" aria-pressed="false"><span class="kbd">${i+1}</span><span>${esc(o)}</span></button>`).join('')}</div>`;
 const accents = `<div class="accents">${['á','é','í','ó','ú','ñ','ü','¿','¡'].map(c => `<button data-accent="${c}" tabindex="-1">${c}</button>`).join('')}</div>`;
-const typeBox = (ph, val='', num) => `<div class="answer-box"><textarea id="ans" rows="2" placeholder="${esc(ph)}" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false" ${num ? 'inputmode="numeric"' : ''}>${esc(val)}</textarea></div>${num ? '' : accents}`;
+const typeBox = (ph, val='', num) => `<div class="answer-box"><textarea id="ans" rows="2" lang="es" placeholder="${esc(ph)}" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false" ${num ? 'inputmode="numeric"' : ''}>${esc(val)}</textarea></div>${num ? '' : accents}`;
 const clozeHtml = (q, it) => { const [a, b] = q.split('___'); return `<div class="cloze">${esc(a)}<span class="gap" id="gap">?</span>${esc(b ?? '')}</div>${it ? `<div class="cloze-it">${esc(it)}</div>` : ''}`; };
 
 function showEx(){
@@ -3239,7 +3274,7 @@ function showEx(){
       break;
     case 'pick':
       k = ex.dir === 'es-it' ? 'Cosa significa?' : 'Come si dice in spagnolo?';
-      body = `<div class="prompt">${ex.dir === 'es-it' ? spk(it.es) : ''}<div class="say">${esc(ex.dir === 'es-it' ? cleanEs(it.es) : it.it)}</div></div>${it.note && ex.dir === 'it-es' && it.note.length < 60 ? `<div class="cloze-it">${esc(it.note)}</div>` : ''}${optsHtml(ex.opts)}`;
+      body = `<div class="prompt">${ex.dir === 'es-it' ? spk(it.es) : ''}<div class="say">${esc(ex.dir === 'es-it' ? (/\(/.test(it.es) ? it.es : cleanEs(it.es)) : it.it)}</div></div>${it.note && ex.dir === 'it-es' && it.note.length < 60 ? `<div class="cloze-it">${esc(it.note)}</div>` : ''}${optsHtml(ex.opts)}`;
       if (ex.dir === 'es-it') setTimeout(() => speak(it.es), 250);
       break;
     case 'listen':
@@ -3342,7 +3377,8 @@ function footAsk(){
 
 function expected(ex){
   switch (ex.type) {
-    case 'type': case 'dict': return [ex.item.es];
+    case 'type': return [ex.item.es, ...synonyms(ex.item)];
+    case 'dict': return [ex.item.es];
     case 'ctx': return ex.answers;
     case 'conj': return [ex.answer];
     case 'cloze': return ex.answers;
@@ -4392,6 +4428,16 @@ document.addEventListener('keydown', e => {
   if (!inField && /^[1-6]$/.test(e.key)) selectOpt(+e.key - 1);
   if (e.key === 'Escape') quit();
 });
+
+/* iPhone: when the keyboard opens, only the visible part of the screen shrinks; full-screen layers follow it */
+function fitViewport(){
+  const v = window.visualViewport; if (!v) return;
+  const r = document.documentElement.style;
+  r.setProperty('--vvh', v.height + 'px'); r.setProperty('--vvt', v.offsetTop + 'px');
+}
+window.visualViewport?.addEventListener('resize', fitViewport);
+window.visualViewport?.addEventListener('scroll', fitViewport);
+fitViewport();
 
 /* ---------------- boot ---------------- */
 paintNav(); render();
