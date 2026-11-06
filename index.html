@@ -2274,8 +2274,13 @@ const LOCAL_KEY = 'repaso:v3';
 const newer = (a, b) => (a?.last || 0) >= (b?.last || 0) ? a : b;
 const Store = {
   mode:'local', db:null, uid:null, root:null, data:{prog:{}, lessons:{}, items:{}, meta:{}},
-  dirty:new Set(), chain:Promise.resolve(), timer:null, pending:0, lastError:'',
+  dirty:new Set(), chain:Promise.resolve(), timer:null, pending:0, lastError:'', loaded:false,
+  // no write may reach the account before it has been read: otherwise an early answer would replace a whole lesson's progress
   async init(){
+    let open; this.chain = new Promise(r => open = r);
+    try { await this.load(); } finally { this.loaded = true; open(); }
+  },
+  async load(){
     try {
       const raw = localStorage.getItem(LOCAL_KEY) || localStorage.getItem('repaso:v1');
       if (raw) { const d = JSON.parse(raw); this.data = {prog:d.prog || {}, lessons:d.lessons || {}, items:d.items || {}, meta:d.meta || {}}; }
@@ -2334,6 +2339,7 @@ const Store = {
     if (this.mode !== 'cloud') return Promise.resolve();
     this.pending++;
     const run = async () => {
+      if (this.mode !== 'cloud') return;
       const body = this.data[name][id], ref = this.col(name).doc(id);
       const go = () => body === undefined ? ref.delete() : ref.set(structuredClone(body));
       try { await go(); }
@@ -2353,10 +2359,12 @@ const Store = {
   del(name, id){ delete this.data[name][id]; this.saveLocal(); return this.write(name, id); },
   flush(){ clearTimeout(this.timer); this.saveLocal(); for (const lid of this.dirty) this.write('prog', lid); this.dirty.clear(); },
 };
+// a record that can't be trusted (missing numbers, a date in the future) counts as never seen, so it can't break a calculation
+const okRec = p => p && Number.isFinite(p.s) && p.s > 0 && Number.isFinite(p.d) && Number.isFinite(p.due) && Number.isFinite(p.last) && p.last <= Date.now() + DAY ? p : null;
 function P(it){
-  if (it.builtin) return Store.data.prog[it.lessonId]?.[it.id] || null;
+  if (it.builtin) return okRec(Store.data.prog[it.lessonId]?.[it.id]);
   const cur = Store.data.items[it.id];
-  return cur?.srs ? {...cur.srs, m:cur.misses || 0, w:cur.w || []} : null;
+  return cur?.srs ? okRec({...cur.srs, m:cur.misses || 0, w:cur.w || []}) : null;
 }
 function setP(it, p){
   if (it.builtin) {
@@ -2399,7 +2407,17 @@ const DECAY = -0.5, FACTOR = 19/81;
 const retention = () => profile().retain || 0.9;
 const d0 = g => clamp(W[4] - Math.exp(W[5]*(g-1)) + 1, 1, 10);
 const retr = (p, now=Date.now()) => p?.reps ? Math.pow(1 + FACTOR*Math.max(0, (now - p.last)/DAY)/Math.max(.05, p.s), DECAY) : 0;
-const intervalDays = st => st / FACTOR * (Math.pow(retention(), 1/DECAY) - 1);
+// the study day starts at 4:00: everything due before then counts as «today»
+function dayCut(now=Date.now()){ const d = new Date(now); d.setHours(4, 0, 0, 0); if (d.getTime() <= now) d.setDate(d.getDate() + 1); return d.getTime(); }
+const dueNow = (p, now=Date.now()) => !!p && (p.due - p.last < DAY ? p.due <= now : p.due < dayCut(now));
+// personal calibration: from how often you really remember cards when they return, an effective stability factor.
+// It follows the forgetting curve, R = (1 + F·t/S)^-0.5, and is shrunk toward 1 until there are enough reviews.
+function calib(){
+  const rl = profile().rl; if (!rl || rl.n < 30) return 1;
+  const tgt = retention(), obs = clamp((rl.ok + tgt*25)/(rl.n + 25), .6, .99);
+  return clamp((Math.pow(tgt, -2) - 1)/(Math.pow(obs, -2) - 1), .4, 1.6);
+}
+const intervalDays = st => st * calib() / FACTOR * (Math.pow(retention(), 1/DECAY) - 1);
 function schedule(p, g, now=Date.now()){
   let st, d;
   if (!p || !p.reps) { st = W[g-1]; d = d0(g); }
@@ -2442,7 +2460,7 @@ function level(it){
 }
 const LEVEL_COLOR = {new:'var(--line-deep)', learn:'var(--saffron)', weak:'var(--bad)', solid:'var(--ok)'};
 const LEVEL_LABEL = {new:'Da vedere', learn:'In corso', weak:'Deboli', solid:'Consolidati'};
-const isDue = it => { const p = P(it); return p && p.due <= Date.now(); };
+const isDue = it => dueNow(P(it));
 function counts(list){ const c = {new:0, learn:0, weak:0, solid:0}; list.forEach(i => c[level(i)]++); return c; }
 
 /* ---------------- haptics ----------------
@@ -2572,7 +2590,7 @@ function renderToday(){
     <div class="greet"><div class="eyebrow">${esc(dateEs)}</div><h1>${greeting()}</h1></div>
     <section class="hero"><div class="tiles"></div>
       <div><div class="eyebrow" style="color:inherit;opacity:.8">Ripasso di oggi</div><h2>${esc(headline)}</h2><p>${esc(sub)}</p>
-        <button class="btn" data-action="start" data-scope="daily">${xpToday ? 'Continua' : 'Inizia'} · circa 5 min</button></div>
+        <button class="btn" data-action="start" data-scope="daily" ${Store.loaded ? '' : 'disabled'}>${Store.loaded ? (xpToday ? 'Continua' : 'Inizia') + ' · circa 5 min' : 'Carico i tuoi progressi…'}</button></div>
       <div class="ring-wrap"><svg class="ring" viewBox="0 0 108 108" aria-label="Obiettivo giornaliero"><circle class="track" cx="54" cy="54" r="44" fill="none" stroke-width="10"/>
         <circle class="bar" cx="54" cy="54" r="44" fill="none" stroke-width="10" stroke-linecap="round" stroke-dasharray="${C}" stroke-dashoffset="${C*(1-pct)}" transform="rotate(-90 54 54)"/>
         <text x="54" y="52" text-anchor="middle" class="ring-label" font-size="24" fill="currentColor">${xpToday}</text><text x="54" y="72" text-anchor="middle" font-size="11" font-weight="700" fill="currentColor" opacity=".75">/ ${goal} XP</text></svg></div>
@@ -2660,7 +2678,7 @@ function detailHtml(i, p){
     ${i.d?.t === 'choice' ? `<div class="exs muted">Alternative: ${i.d.o.slice(1).map(esc).join(', ')}</div>` : ''}
     ${r ? `<div class="rule-mini"><b>${esc(r.title)}</b> ${esc(r.text)}</div>` : ''}
     ${p?.w?.length ? `<div class="exs errs">Avevi risposto: ${p.w.map(w => `<s>${esc(w)}</s>`).join(' · ')}</div>` : ''}
-    <div class="exs muted">${p ? `Ripasso: ${p.due <= Date.now() ? 'oggi' : 'tra ' + Math.max(1, Math.round((p.due - Date.now())/DAY)) + ' g'} · visto ${p.reps} ${p.reps === 1 ? 'volta' : 'volte'}` : 'Non ancora visto nelle sessioni'}</div>`;
+    <div class="exs muted">${p ? `Ripasso: ${dueNow(p) ? 'oggi' : 'tra ' + Math.max(1, Math.round((p.due - Date.now())/DAY)) + ' g'} · visto ${p.reps} ${p.reps === 1 ? 'volta' : 'volte'}` : 'Non ancora visto nelle sessioni'}</div>`;
 }
 function conjTable(i){ return `<table class="conj">${PERSONS.filter(p => i.forms[p]).map(p => `<tr><td>${p}</td><td>${esc(i.forms[p])}</td></tr>`).join('')}</table>`; }
 
@@ -2718,7 +2736,7 @@ function settingsSheet(){
   const seg = (name, vals, cur, fmt) => `<div class="seg">${vals.map(v => `<button data-action="set" data-k="${name}" data-v="${v}" aria-pressed="${v === cur}">${fmt ? fmt(v) : v}</button>`).join('')}</div>`;
   openSheet(`<div class="sheet" role="dialog" aria-modal="true" aria-label="Impostazioni"><div class="sheet-head"><h2>Impostazioni</h2><button class="icon-btn" data-action="close" aria-label="Chiudi">${ICON.close}</button></div>
     <div class="sheet-body">
-      <div class="field"><label>Carte nuove al giorno</label>${seg('newPerDay', [10, 20, 30, 50], npd)}<p class="hint">Hai già fatto tutte queste lezioni col tutor: con 20 al giorno rivedi tutto il materiale in circa ${Math.ceil(items().filter(i => !P(i)).length / 20)} giorni, poi restano solo i ripassi.</p></div>
+      <div class="field"><label>Carte nuove al giorno</label>${seg('newPerDay', [10, 20, 30, 50], npd)}<p class="hint">Il tetto della giornata. In ogni sessione l’app ne aggiunge di meno quando hai tanti ripassi in attesa o le ultime sessioni sono andate male, così il carico resta sostenibile. Ti restano ${items().filter(i => !P(i)).length} carte da vedere.</p></div>
       <div class="field"><label>Quanto ricordare</label>${seg('retain', [0.85, 0.9, 0.95], p.retain || 0.9, v => v === 0.85 ? 'Leggero' : v === 0.9 ? 'Consigliato' : 'Intensivo')}<p class="hint">Consigliato: ricordi circa 9 carte su 10 quando tornano. Intensivo ne ricordi di più, ma le rivedi più spesso.</p></div>
       <div class="field"><label>Obiettivo giornaliero</label>${seg('goal', [30, 50, 100], goal, v => v + ' XP')}</div>
       <div class="field"><label>Suoni</label>${seg('mute', [false, true], !!p.mute, v => v ? 'Spenti' : 'Accesi')}</div>
@@ -2992,17 +3010,19 @@ function buildQueue(scope, arg){
   }
   // reviews: the card closest to being forgotten comes first
   const risk = i => retr(P(i), now);
-  const due = pool.filter(i => P(i) && P(i).due <= now).sort((a,b) => risk(a) - risk(b));
+  const due = pool.filter(i => dueNow(P(i), now)).sort((a,b) => risk(a) - risk(b));
   const fresh = orderNew(pool.filter(i => !P(i)));
-  const ahead = pool.filter(i => P(i) && P(i).due > now);
-  // new cards are dosed: fewer when reviews pile up or recent sessions went badly
+  const ahead = pool.filter(i => P(i) && !dueNow(P(i), now));
+  // new cards are dosed on the real workload: each one costs future reviews, so they shrink as reviews pile up,
+  // and on quality: fewer when recent sessions went badly
   const acc = profile().acc ?? .85;
-  let newCap = acc < .7 ? 3 : acc < .8 ? 5 : 8;
-  if (due.length > 25) newCap = Math.min(newCap, 2); else if (due.length > 14) newCap = Math.min(newCap, 4);
+  const quality = acc < .7 ? .4 : acc < .8 ? .7 : 1;
+  const base = newPerDay()*.6;   // 20 al giorno in impostazioni → fino a 12 per sessione
+  const newCap = Math.max(due.length > 40 ? 0 : 2, Math.round(clamp(base - due.length*.3, 2, base)*quality));
   let pick = [];
   if (scope === 'weak') pick = pool.filter(i => P(i) && (P(i).m > 0 || level(i) === 'weak')).sort((a,b) => weakScore(b) - weakScore(a)).slice(0, 12);
   else if (scope === 'daily') {
-    pick = due.slice(0, 15);
+    pick = due.slice(0, 18);
     pick.push(...fresh.slice(0, Math.min(newLeft(), newCap)));
     if (pick.length < 8) pick.push(...ahead.sort((a,b) => risk(a) - risk(b)).slice(0, 8 - pick.length));
   } else {
@@ -3011,7 +3031,10 @@ function buildQueue(scope, arg){
     pick.push(...ahead.sort((a,b) => risk(a) - risk(b)).slice(0, Math.max(0, 12 - pick.length)));
     pick = pick.slice(0, 14);
   }
-  pick = [...new Set(pick)];
+  // siblings (the same verb in two tenses, a word and the phrase built on it) give each other away: one per session
+  const key = i => i.kind === 'verb' ? 'v:' + i.es : i.kind === 'vocab' || i.kind === 'phrase' ? 'w:' + bare(firstVar(i.es)) : 'i:' + i.id;
+  const taken = new Set();
+  pick = [...new Set(pick)].filter(i => { const k = key(i); if (taken.has(k)) return false; taken.add(k); return true; });
 
   // each card becomes a chunk of exercises that stay together (rule, verb or leech card + first exercise)
   const introduced = new Set();
@@ -3025,7 +3048,7 @@ function buildQueue(scope, arg){
     if (it.kind === 'drill' && it.ruleId && !P(it) && !introduced.has(it.ruleId) && !ruleKnown(it.ruleId)) {
       introduced.add(it.ruleId); chunk.unshift({type:'rule', rule:RULES[it.ruleId], item:it, intro:true});
     }
-    if ((P(it)?.lapses || 0) >= 4 && it.kind !== 'gen') chunk.unshift({type:'leech', item:it, intro:true});
+    if ((P(it)?.lapses || 0) >= 4 && (P(it).g === 1 || P(it).s < 10) && it.kind !== 'gen') chunk.unshift({type:'leech', item:it, intro:true});
     (P(it) ? reviews : news).push(chunk);
   }
   const chunks = shuffle(reviews);
@@ -3159,10 +3182,11 @@ function easier(ex, all){
 }
 
 function startSession(scope, arg){
+  if (!Store.loaded) return toast('Un attimo: sto caricando i tuoi progressi');
   const queue = buildQueue(scope, arg);
   if (!queue.length) return toast(scope === 'weak' ? 'Nessun punto debole in questo momento' : 'Niente da ripassare qui per ora');
   closeSheet();
-  S = {scope, queue, i:0, total:queue.length, xp:0, right:0, answered:0, newSeen:0, missed:new Map(), tries:new Map(), graded:new Set(), sched:[], started:Date.now(), state:'ask', sel:null, ex:null, saved:false, combo:0, best:0};
+  S = {scope, queue, i:0, total:queue.length, xp:0, right:0, answered:0, newSeen:0, missed:new Map(), tries:new Map(), consol:new Set(), graded:new Set(), sched:[], rl:{n:0, ok:0}, started:Date.now(), state:'ask', sel:null, ex:null, saved:false, combo:0, best:0};
   $('#layer').innerHTML = `<div class="session" role="dialog" aria-modal="true" aria-label="Sessione di ripasso">
     <div class="s-top"><button class="icon-btn" data-action="quit" aria-label="Chiudi sessione">${ICON.close}</button><div class="progress"><span id="prog"></span></div><div class="s-count num" id="scount"></div><div class="s-xp num" id="sxp">0 XP</div></div>
     <div class="s-body" id="sbody"></div><div class="s-foot" id="sfoot"></div></div>`;
@@ -3385,13 +3409,7 @@ function conclude(r, msg, extra){
   const ex = S.ex, it = ex.item;
   const graded = it && !ex.retry && !S.graded.has(it.id);
   grade_(it, evGrade(ex, r), S.said);
-  const tries = it ? S.tries.get(it.id) || 0 : 0;
-  if (r === 'bad' && it && tries < 2) {
-    S.tries.set(it.id, tries + 1);
-    const all = items(), base = tries === 1 ? easier(ex, all) || ex : ex;
-    const retry = base.type === 'gen' ? {...genEx(it, 0), retry:true} : base.opts ? {...base, opts:shuffle(base.opts), retry:true} : base.type === 'build' ? {...base, toks:shuffle(base.toks), retry:true} : {...base, retry:true};
-    S.queue.splice(Math.min(S.queue.length, S.i + 3 + Math.floor(Math.random()*3)), 0, retry); S.total = S.queue.length;
-  }
+  afterAnswer(ex, r);
   const nextTxt = graded && P(it) ? whenTxt(P(it).due) : '';
   const lines = {ok:['¡Muy bien!','¡Perfecto!','¡Eso es!','¡Genial!','¡Estupendo!','¡Así se hace!','¡Bien hecho!'], warn:['¡Casi!','¡Por poco!'], bad:['Non proprio','Quasi, ma no','Ci riproviamo tra poco']};
   S.combo = r === 'bad' ? 0 : (S.combo || 0) + 1; S.best = Math.max(S.best, S.combo);
@@ -3425,16 +3443,46 @@ function conclude(r, msg, extra){
   if (ex.type === 'gen' && ex.g === 'num') speak(numEs(ex.n));
   S.state = 'shown';
 }
+// what follows an answer inside the session
+function afterAnswer(ex, r){
+  const it = ex.item; if (!it) return;
+  const tries = S.tries.get(it.id) || 0, all = items();
+  const put = (e, gap) => { S.queue.splice(Math.min(S.queue.length, S.i + gap), 0, e); S.total = S.queue.length; };
+  if (r === 'bad' && tries < 2) {
+    S.tries.set(it.id, tries + 1);
+    const base = tries === 1 ? easier(ex, all) || ex : ex;
+    const retry = base.type === 'gen' ? {...genEx(it, 0), retry:true} : base.opts ? {...base, opts:shuffle(base.opts), retry:true} : base.type === 'build' ? {...base, toks:shuffle(base.toks), retry:true} : {...base, retry:true};
+    put(retry, 3 + Math.floor(Math.random()*3));
+  } else if (r !== 'bad' && ex.firstSight && !S.consol.has(it.id)) {
+    const c = consolidation(it, all);
+    if (c) { S.consol.add(it.id); put({...c, consol:true}, 5 + Math.floor(Math.random()*4)); }
+  }
+}
+// the second meeting with a new card asks for it the other way round, one step harder
+function consolidation(it, all){
+  if (it.kind === 'verb') { const per = pickOne(PERSONS.filter(x => it.forms?.[x])); return per ? {type:'conj', item:it, person:per, answer:it.forms[per]} : null; }
+  if (it.kind !== 'vocab' && it.kind !== 'phrase') return null;
+  const short = cleanEs(firstVar(it.es)).length <= 22 && !/…/.test(it.es);
+  return short ? {type:'type', item:it} : canSpeak && Math.random() < .5 ? listenEx(it, all) : pickEx(it, all, 'it-es');
+}
 function grade_(it, g, said){
   if (!it) return;
   S.answered++;
   const retry = S.ex?.retry;
   if (g >= 2) { S.right++; S.xp += retry ? 5 : g === 3 ? 10 : 7; }
   else S.missed.set(it.id, {it, said:said || '', correct:correctText(S.ex)});
+  const ex = S.ex || {};
+  if (ex.consol) {
+    // second recall of a new card: its first interval is decided here, from a clean start
+    const next = schedule(null, Math.min(g, 3));
+    if (S.sched.length) S.sched[S.sched.length - 1] = next.due;
+    return setP(it, next);
+  }
   if (retry || S.graded.has(it.id)) return;
   S.graded.add(it.id);
   const prev = P(it);
-  if (!prev) S.newSeen++;
+  if (!prev) { S.newSeen++; ex.firstSight = true; if (g > 2) g = 2; }   // one meeting is not yet memory: tomorrow, unless the second recall goes well
+  else if (Date.now() - prev.last >= .8*DAY) { S.rl.n++; if (g > 1) S.rl.ok++; }
   const next = schedule(prev, g);
   S.sched.push(next.due);
   if (g === 1 && said) next.w = [said.slice(0, 80), ...(prev?.w || []).filter(x => x !== said)].slice(0, 3);
@@ -3499,6 +3547,8 @@ function saveSession(){
   const p = profile(), k = todayKey();
   const patch = {xpByDay:{...(p.xpByDay||{}), [k]:(p.xpByDay?.[k]||0) + S.xp}, newByDay:{[k]:(p.newByDay?.[k]||0) + S.newSeen}};
   if (S.answered >= 5) patch.acc = +(.7*(p.acc ?? .85) + .3*(S.right/S.answered)).toFixed(3);
+  // reviews that came back after at least a day: how often you really remembered (recent ones weigh more)
+  if (S.rl.n) { const old = p.rl || {n:0, ok:0}, k = Math.pow(.99, S.rl.n); patch.rl = {n:+(old.n*k + S.rl.n).toFixed(2), ok:+(old.ok*k + S.rl.ok).toFixed(2)}; }
   saveProfile(patch);
   Store.flush();
 }
