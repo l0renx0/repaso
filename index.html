@@ -703,6 +703,10 @@ mark{background:linear-gradient(transparent 52%, color-mix(in srgb, var(--saffro
 
 .session,.scrim{top:var(--vvt, 0px); bottom:auto; height:var(--vvh, 100%)}
 
+.accent-line{font-size:1.15rem; font-weight:700; margin-top:4px}
+.accent-line ins{color:var(--ok); text-decoration:none; background:color-mix(in srgb, var(--ok) 18%, transparent); border-radius:3px; padding:0 2px}
+.rule-why{display:flex; gap:6px; padding:8px 10px; margin-top:6px; border-radius:10px; background:color-mix(in srgb, var(--surface) 70%, transparent); color:var(--ink)}
+
 @media (prefers-reduced-motion: reduce){
   *,*::before,*::after{animation-duration:.01ms!important; animation-iteration-count:1!important; transition-duration:.01ms!important}
 }
@@ -2117,6 +2121,47 @@ function answersOf(list){
   }
   return [...new Set(out.map(s => s.trim()).filter(Boolean))];
 }
+/* ----- why this word has an accent: Spanish spelling rules, explained in Italian ----- */
+const DIACR = {'tú':'tú (pronome «tu») ha l’accento; tu senza accento è il possessivo «tuo».', 'él':'él (pronome «lui») ha l’accento; el senza accento è l’articolo.', 'mí':'mí (pronome, «me» dopo una preposizione: para mí) ha l’accento; mi senza accento è «mio».', 'sí':'sí («sì») ha l’accento; si senza accento è «se».', 'sé':'sé («so», da saber) ha l’accento; se senza accento è il pronome.', 'té':'té (la bevanda) ha l’accento; te senza accento è il pronome «ti».', 'más':'más («più») ha l’accento; mas senza accento è un raro «ma».', 'dé':'dé (da dar) ha l’accento; de senza accento è la preposizione.', 'está':'está (verbo estar) ha l’accento; esta senza accento è «questa».', 'están':'están (verbo estar) ha l’accento; estan senza accento non esiste.', 'estás':'estás (verbo estar) ha l’accento; estas senza accento è «queste».'};
+const QWORDS = /^(qué|cómo|dónde|cuándo|cuánto|cuánta|cuántos|cuántas|quién|quiénes|cuál|cuáles|adónde)$/;
+const isV = c => /[aeiouáéíóúü]/.test(c), strongV = c => /[aeoáéóíú]/.test(c);
+function nuclei(w){
+  const out = []; let i = 0;
+  while (i < w.length) {
+    if (!isV(w[i])) { i++; continue; }
+    let j = i; while (j + 1 < w.length && isV(w[j + 1])) j++;
+    let start = i;
+    for (let k = i + 1; k <= j; k++) if (strongV(w[k - 1]) && strongV(w[k])) { out.push([start, k - 1]); start = k; }
+    out.push([start, j]); i = j + 1;
+  }
+  return out;
+}
+function accentRule(word){
+  const w = word.toLowerCase().replace(/[¿¡?!.,;:«»"]/g, '');
+  if (DIACR[w]) return DIACR[w];
+  if (QWORDS.test(w)) return `${w}: nelle domande e nelle esclamazioni le parole interrogative (qué, cómo, dónde, cuándo, cuánto, quién, cuál) hanno sempre l’accento.`;
+  const at = w.search(/[áéíóú]/); if (at < 0) return '';
+  if (/[íú]/.test(w[at]) && (isV(w[at - 1] || '') || isV(w[at + 1] || ''))) return `${w}: la ${w[at]} accentata separa due vocali in sillabe diverse (dí-a, pa-ís); senza accento si leggerebbero insieme.`;
+  const ns = nuclei(w), pos = ns.length - ns.findIndex(([a, b]) => at >= a && at <= b);
+  if (pos >= 3) return `${w}: l’accento cade sulla terzultima sillaba (parola sdrucciola, come teléfono o médico): in spagnolo si scrive sempre.`;
+  if (pos === 1) return `${w}: l’accento cade sull’ultima sillaba e la parola finisce in vocale, n o s: in questo caso si scrive (jardín, vivís, café).`;
+  if (pos === 2) return `${w}: l’accento cade sulla penultima sillaba ma la parola finisce in consonante diversa da n o s: in questo caso si scrive (fácil, lápiz, árbol).`;
+  return '';
+}
+// the accent notes for an answer that was right but for its accents: word by word, what is missing or extra, and why
+function accentNotes(said, right){
+  const notes = [], mine = said.split(/\s+/), clean = w => w.replace(/[¿¡?!.,;:«»"]/g, '');
+  if (/[àèìòù]/.test(said)) notes.push('In spagnolo l’accento scritto è sempre acuto: é, á, í, ó, ú, mai è o à.');
+  for (const r of cleanEs(right).split(/\s+/)) {
+    const w = mine.find(x => bare(x) === bare(r));
+    if (!w || norm(w) === norm(r)) continue;
+    if (/ñ/i.test(r) && !/ñ/i.test(w)) notes.push(`La ñ di ${clean(r)} è una lettera a sé (suona come gn in «gnocchi»): non si può sostituire con n.`);
+    else if (/[áéíóú]/i.test(r)) { const t = accentRule(r); if (t) notes.push(t); }
+    else notes.push(DIACR[clean(w).toLowerCase()] ? `Qui ci vuole ${clean(r)} senza accento. ` + DIACR[clean(w).toLowerCase()] : `${clean(r)} si scrive senza accento.`);
+  }
+  return [...new Set(notes)].slice(0, 2);
+}
+
 // cards that mean exactly the same thing in Italian (disculpa / perdona, los deberes / las tareas) are synonyms of each other
 const synonyms = it => items().filter(o => o !== it && (o.kind === 'vocab' || o.kind === 'phrase') && (it.kind === 'vocab' || it.kind === 'phrase') && norm(o.it) === norm(it.it)).map(o => o.es);
 function grade(input, answers, sentence){
@@ -2124,8 +2169,9 @@ function grade(input, answers, sentence){
   const list = answersOf(answers);
   const N = s => sentence ? noSubj(norm(s)) : norm(s), B = s => sentence ? noSubj(bare(s)) : bare(s);
   for (const a of list) if (N(a) === N(u)) return {r:'ok'};
-  for (const a of list) if (B(a) === B(u)) return {r:'warn', msg:'Attento agli accenti: ' + a};
-  for (const a of list) if (noArt(norm(a)) !== norm(a) && noArt(norm(a)) === u) return {r:'warn', msg:'Ricorda l’articolo: ' + a};
+  for (const a of list) if (B(a) === B(u)) return {r:'warn', kind:'accent', msg:'Attento agli accenti: ' + a};
+  for (const a of list) if (noArt(norm(a)) !== norm(a) && noArt(norm(a)) === u) return {r:'warn', kind:'article', msg:'Ricorda l’articolo: ' + a};
+  for (const a of list) if (noArt(bare(a)) !== bare(a) && noArt(bare(a)) === bare(u)) return {r:'warn', kind:'article', msg:'Ricorda l’articolo e l’accento: ' + a};
   for (const a of list) { const m = norm(a).match(/^(me|te|se|nos|os) (.+)$/); if (m && m[2] === u) return {r:'warn', msg:'Ricorda il pronome: ' + a}; }
   for (const a of list) { const A = B(a), U = B(u); const tol = A.length > 40 ? 3 : A.length > 12 ? 2 : A.length >= 5 ? 1 : 0; if (tol && lev(A, U) <= tol) return {r:'warn', msg:'Quasi, c’è un errore di battitura: ' + a}; }
   return {r:'bad'};
@@ -2767,6 +2813,7 @@ function settingsSheet(){
     <div class="sheet-body">
       <div class="field"><label>Carte nuove al giorno</label>${seg('newPerDay', [10, 20, 30, 50], npd)}<p class="hint">Il tetto della giornata. In ogni sessione l’app ne aggiunge di meno quando hai tanti ripassi in attesa o le ultime sessioni sono andate male, così il carico resta sostenibile. Ti restano ${items().filter(i => !P(i)).length} carte da vedere.</p></div>
       <div class="field"><label>Quanto ricordare</label>${seg('retain', [0.85, 0.9, 0.95], p.retain || 0.9, v => v === 0.85 ? 'Leggero' : v === 0.9 ? 'Consigliato' : 'Intensivo')}<p class="hint">Consigliato: ricordi circa 9 carte su 10 quando tornano. Intensivo ne ricordi di più, ma le rivedi più spesso.</p></div>
+      <div class="field"><label>Accenti mancanti</label>${seg('accents', ['quasi', 'ok'], p.accents || 'quasi', v => v === 'quasi' ? 'Quasi giusta' : 'Giusta')}<p class="hint">Consigliato: «Quasi giusta». La parola conta come ricordata e ti viene spiegata la regola, ma torna un po’ prima, così l’accento si fissa. Con «Giusta» conta come una risposta perfetta e vedi solo la nota.</p></div>
       <div class="field"><label>Obiettivo giornaliero</label>${seg('goal', [30, 50, 100], goal, v => v + ' XP')}</div>
       <div class="field"><label>Suoni</label>${seg('mute', [false, true], !!p.mute, v => v ? 'Spenti' : 'Accesi')}</div>
       <div class="field"><label>Vibrazione</label>${seg('haptics', [true, false], p.haptics !== false, v => v ? 'Accesa' : 'Spenta')}</div>
@@ -3359,9 +3406,9 @@ function showEx(){
   footAsk();
   const ans = $('#ans');
   if (ans) {
-    ans.addEventListener('input', () => { $('#check').disabled = !ans.value.trim(); if (ex.type === 'cloze' || ex.type === 'ctx') $('#gap').textContent = ans.value || '?'; });
+    ans.addEventListener('input', () => { const c = $('#check'); if (c) c.disabled = !ans.value.trim(); if (ex.type === 'cloze' || ex.type === 'ctx') $('#gap').textContent = ans.value || '?'; });
     if (matchMedia('(hover:hover)').matches) setTimeout(() => { ans.focus(); if (ex.type === 'fix') ans.setSelectionRange(ans.value.length, ans.value.length); }, 50);
-    if (ex.type === 'fix') $('#check').disabled = false;
+    if (ex.type === 'fix' && $('#check')) $('#check').disabled = false;
   }
 }
 function footAsk(){
@@ -3400,15 +3447,18 @@ function correctText(ex){
 const usesOpts = ex => ['pick','listen','conj-pick','choice'].includes(ex.type) || ex.type === 'gen' && ex.mode === 'pick';
 function check(skip){
   if (S.state !== 'ask') return;
-  const ex = S.ex; S.tAns = Date.now();
+  const ex = S.ex; S.tAns = Date.now(); S.kind = '';
   let r = 'bad', msg = '';
+  const box = $('#ans'); if (box) box.readOnly = true;   // the answer stays as you gave it, next to the correction
   const said = ex.type === 'build' ? S.tokens.lane.map(i => S.tokens.all[i].w).join(' ') : usesOpts(ex) ? (ex.opts[S.sel] ?? '') : ($('#ans')?.value || '').trim();
   S.said = skip ? '' : said;
   if (skip) r = 'bad';
   else if (usesOpts(ex)) r = ex.opts[S.sel] === ex.answer ? 'ok' : 'bad';
   else if (ex.type === 'build') { r = norm(said) === norm(ex.es) ? 'ok' : bare(said) === bare(ex.es) ? 'warn' : 'bad'; if (r === 'warn') msg = 'Attento agli accenti: ' + ex.es; }
   else if (ex.type === 'gen' && ex.g === 'num' && ex.mode === 'listen') r = said.replace(/\D/g,'') === String(ex.n) ? 'ok' : 'bad';
-  else { const g = grade(said, expected(ex), ex.type === 'tr' || ex.type === 'fix'); r = g.r; msg = g.msg || ''; }
+  else { const g = grade(said, expected(ex), ex.type === 'tr' || ex.type === 'fix'); r = g.r; msg = g.msg || ''; S.kind = g.kind || ''; }
+  if (ex.type === 'build' && r === 'warn') S.kind = 'accent';
+  if (S.kind === 'accent' && profile().accents === 'ok') r = 'ok';
   if (usesOpts(ex)) document.querySelectorAll('.opt[data-opt]').forEach((b, i) => { if (ex.opts[i] === ex.answer) b.classList.add('right'); else if (i === S.sel) b.classList.add('wrong'); });
   if (ex.type === 'tr' && r === 'bad' && !skip) {
     if (sampleFn) return judgeTranslation(ex, said);
@@ -3450,16 +3500,22 @@ function conclude(r, msg, extra){
   const lines = {ok:['¡Muy bien!','¡Perfecto!','¡Eso es!','¡Genial!','¡Estupendo!','¡Así se hace!','¡Bien hecho!'], warn:['¡Casi!','¡Por poco!'], bad:['Non proprio','Quasi, ma no','Ci riproviamo tra poco']};
   S.combo = r === 'bad' ? 0 : (S.combo || 0) + 1; S.best = Math.max(S.best, S.combo);
   const combo = r !== 'bad' && [3, 5, 8, 12, 16, 20, 25, 30].includes(S.combo);
-  const head = pickOne(lines[r]) + (combo ? ` <span class="combo">${S.combo} di fila</span>` : ''), correct = correctText(ex);
+  const accentOnly = S.kind === 'accent' && S.said;
+  const head = (accentOnly ? (r === 'ok' ? '¡Bien! Occhio all’accento' : 'Giusta, manca solo l’accento') : pickOne(lines[r])) + (combo ? ` <span class="combo">${S.combo} di fila</span>` : ''), correct = correctText(ex);
   const why = ex.d?.why || (ex.type === 'gen' ? '' : '');
   const rule = it?.ruleId && ['choice','cloze','fix'].includes(ex.type) && RULES[it.ruleId];
   const trans = it && it.it && !['pick','choice','match'].includes(ex.type) && ex.type !== 'tr' && ex.type !== 'gen' && it.kind !== 'drill' ? `${cleanEs(it.es)} = ${it.it}` : ex.d?.it && ex.type !== 'tr' && ex.type !== 'choice' ? ex.d.it : '';
   const showCorrect = r !== 'ok' || ['cloze','choice','build','tr','fix'].includes(ex.type) && ex.d?.t !== 'q';
   const f = $('#sfoot'); f.className = 's-foot ' + r;
-  f.innerHTML = `<div class="s-foot-in"><div class="fb"><span class="badge">${r === 'ok' ? ICON.check : r === 'warn' ? ICON.warn : ICON.x}</span><div style="min-width:0;flex:1">
+  f.innerHTML = `<div class="s-foot-in"><div class="fb"><span class="badge">${r === 'ok' || accentOnly ? ICON.check : r === 'warn' ? ICON.warn : ICON.x}</span><div style="min-width:0;flex:1">
       <div class="h">${head}</div>
       ${extra?.top || ''}
       ${(() => {
+        if (accentOnly) {
+          const target = msg.includes(': ') ? msg.split(': ').slice(1).join(': ') : correct;
+          const dp = diffPair(S.said, cleanEs(target)), notes = accentNotes(S.said, target);
+          return `<div class="d accent-line">${dp ? dp.right : esc(target)}</div>${notes.map(n => `<div class="why rule-why">${esc(n)}</div>`).join('')}${['cloze','ctx'].includes(ex.type) ? `<div class="d">${esc(correct)}</div>` : ''}`;
+        }
         const typed = S.said && !usesOpts(ex) && ex.type !== 'build' && r !== 'ok';
         const target = typed ? (r === 'warn' && msg.includes(': ') ? msg.split(': ').slice(1).join(': ') : (['cloze','ctx','conj'].includes(ex.type) ? expected(ex)[0] : correct)) : '';
         const dp = typed && target ? diffPair(S.said, cleanEs(target)) : null;
@@ -3487,7 +3543,7 @@ function afterAnswer(ex, r){
   if (r === 'bad' && tries < 2) {
     S.tries.set(it.id, tries + 1);
     const base = tries === 1 ? easier(ex, all) || ex : ex;
-    const retry = base.type === 'gen' ? {...genEx(it, 0), retry:true} : base.opts ? {...base, opts:shuffle(base.opts), retry:true} : base.type === 'build' ? {...base, toks:shuffle(base.toks), retry:true} : {...base, retry:true};
+    const retry = base.opts ? {...base, opts:shuffle(base.opts), retry:true} : base.type === 'build' ? {...base, toks:shuffle(base.toks), retry:true} : {...base, retry:true};
     put(retry, 3 + Math.floor(Math.random()*3));
   } else if (r !== 'bad' && ex.firstSight && !S.consol.has(it.id)) {
     const c = consolidation(it, all);
@@ -4346,7 +4402,7 @@ document.addEventListener('click', e => {
     case 'import': resetImport(); return importSheet();
     case 'close': return closeSheet();
     case 'settings': return settingsSheet();
-    case 'set': { const k = t.dataset.k, raw = t.dataset.v, v = raw === 'true' ? true : raw === 'false' ? false : +raw; saveProfile({[k]:v}); settingsSheet(); return render(); }
+    case 'set': { const k = t.dataset.k, raw = t.dataset.v, v = raw === 'true' ? true : raw === 'false' ? false : isNaN(+raw) ? raw : +raw; saveProfile({[k]:v}); settingsSheet(); return render(); }
     case 'show-paste': imp.showPaste = true; importSheet(); return $('#imp-paste')?.focus();
     case 'rm-file': imp.files.splice(+t.dataset.i, 1); return importSheet();
     case 'analyze': return analyze();

@@ -18,3 +18,7 @@ Tutta l'app è un solo file: [`index.html`](index.html).
 L'app è pensata per girare come Artifact su claude.ai. Lì funzionano l'analisi delle lezioni, le correzioni e le conversazioni con Claude, e i progressi si sincronizzano tra iPhone e Mac.
 
 Aperta altrove (per esempio con GitHub Pages) funzionano il ripasso, gli allenamenti e la pronuncia. I progressi però restano sul dispositivo, e le funzioni con Claude non sono disponibili.
+
+## Test
+
+`tests/run.sh` controlla tutta l'app: ogni carta in ogni tipo di esercizio, i flussi principali, il salvataggio nell'account e un apprendente simulato per 120 giorni. Serve Node con Playwright e Chromium. `CLAUDE.md` spiega com'è fatta l'app e le regole da non rompere.
