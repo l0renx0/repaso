@@ -12,7 +12,7 @@ Lorenzo scrive in italiano: rispondi in italiano, in modo semplice, spiegando il
   (`v3`, `v4: parla`, `v5`, `v6: the exercise screen`).
 - **`CURRICULUM`**: il materiale del tutor in un formato a righe (spiegato nel commento sopra la costante).
   `parseCurriculum` lo trasforma in lezioni, unità, regole (`RULES`) e carte (`BUILT.items`).
-- **`GRAMMAR`**: 20 argomenti di teoria guidata (osserva, scopri, regola, capisci, pratica), collegati alle regole del tutor.
+- **`GRAMMAR`**: 21 argomenti (l'ultimo, «Gli accenti», insegna le regole dell'accento scritto) di teoria guidata (osserva, scopri, regola, capisci, pratica), collegati alle regole del tutor.
 - **Motore delle sessioni**: `buildQueue` (scelta delle carte), `makeEx` (scelta dell'esercizio secondo `stage`),
   `check` / `grade` (correzione), `evGrade` (voto dedotto da come si risponde), `grade_` + `schedule` (FSRS-5),
   `afterAnswer` (ripetizioni nella sessione e secondo richiamo delle carte nuove).
@@ -52,3 +52,8 @@ e push su `main` di questo repository.
 Lorenzo carica qui i PDF o i documenti Word della lezione. Trascrivi il materiale nel formato di `CURRICULUM`
 (una sezione `@L` nuova in fondo, nell'ordine del tutor), con le regole `G` seguite dai loro esercizi.
 Poi lancia `tests/cards.js` e verifica che non compaiano problemi nuovi.
+
+## Skill del progetto
+
+In `.claude/skills/`: `nuova-lezione` (dal materiale del tutor al curriculum), `revisore-spagnolo`
+(controllo della lingua prima di inserire contenuti), `prova-e-pubblica` (test, Artifact, GitHub).

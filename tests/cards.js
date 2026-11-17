@@ -48,7 +48,7 @@ const { chromium } = require('playwright');
     const gens = all.filter(i => i.kind === 'gen');
     for (const g of gens) for (let k = 0; k < 400; k++) {
       let ex; try { ex = genEx(g, k % 3); } catch (e) { add('crash generatore', g.gen + ': ' + e.message); continue; }
-      if (ex.mode === 'pick' && (ex.opts.filter(o => o === ex.answer).length !== 1 || new Set(ex.opts).size !== ex.opts.length || ex.opts.length < 3)) add('generatore: opzioni', `${g.gen}: ${ex.answer} | ${ex.opts.join(' | ')}`);
+      if (ex.mode === 'pick' && (ex.opts.filter(o => o === ex.answer).length !== 1 || new Set(ex.opts).size !== ex.opts.length || ex.opts.length < (g.gen === 'accent' ? 2 : 3))) add('generatore: opzioni', `${g.gen}: ${ex.answer} | ${ex.opts.join(' | ')}`);
       if (ex.mode === 'write') { const gg = grade(ex.answer, expected(ex)); if (gg.r !== 'ok') add('generatore: risposta propria rifiutata', g.gen + ' ' + ex.answer); }
     }
     // same Italian meaning, different Spanish: typing either should be fine but only one is accepted

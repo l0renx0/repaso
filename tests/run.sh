@@ -2,8 +2,9 @@
 # Runs every check on the app. Usage: tests/run.sh [path/to/index.html]
 # Needs Node and Playwright with Chromium (preinstalled in Claude Code cloud sessions).
 set -u
+PAGE="$(realpath "${1:-$(dirname "$0")/../index.html}")"   # resolved before moving into tests/
+[ -f "$PAGE" ] || { echo "Pagina non trovata: $PAGE"; exit 1; }
 cd "$(dirname "$0")"
-PAGE="$(realpath "${1:-../index.html}")"
 run(){ echo "== $1"; shift; timeout 600 node "$@" 2>&1 | grep -vE '^\s*$' | tail -25; }
 run "carte: ogni carta in ogni esercizio, generatori" cards.js "$PAGE"
 run "flussi: importazione, conversazione, pronuncia, grammatica, impostazioni" flows.js "$PAGE"
